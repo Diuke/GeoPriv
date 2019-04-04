@@ -34,6 +34,7 @@ import os.path
 
 #custom classes
 from .utils.DataModel import DataModel
+from .LPPMs.spatial.Spatial import Spatial
 
 
 class Geopriv:
@@ -206,8 +207,7 @@ class Geopriv:
         for name, l in project_layers.items():
             if isinstance(l, QgsVectorLayer):
                 type = l.geometryType()
-                b = type == QgsWkbTypes.PointGeometry
-                if not (type == QgsWkbTypes.Point or type == QgsWkbTypes.PointGeometry):
+                if type == QgsWkbTypes.Point:
                     layers.append(l)
             else:
                 layers.append(l)
@@ -224,7 +224,7 @@ class Geopriv:
         self.populatePreviewDataTable(self.layer)
         
     def populatePreviewDataTable(self, layer):
-        data = DataModel(layer)
+        data = DataModel(layer, True)
         rowCount = 100 if len(data.layerData) >= 100 else len(data.layerData)
         colCount = len(data.fields) + 2
         self.previewDataTable.setRowCount(rowCount)
@@ -246,9 +246,15 @@ class Geopriv:
                     info = data.layerData[i]['extraData'][data.fields[j-2]]
                     
                 self.previewDataTable.setItem(i, j, QTableWidgetItem(str(info)))
+        self.data = data
                 
     def log(self, msg):
         QgsMessageLog.logMessage(msg, level=Qgis.Info)
+    
+    def processSpatial(self):
+        params = {}
+        newData = Spatial(self.data, params)
+        
         
 
     def run(self):
@@ -263,7 +269,7 @@ class Geopriv:
         
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
-        self.dlg.processSpatialButton.clicked.connect(self.alerting)
+        self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
         self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         # show the dialog 
         self.dlg.show()
