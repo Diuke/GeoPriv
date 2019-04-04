@@ -217,7 +217,7 @@ class Geopriv:
         
 
     def alerting(self):
-        self.log("asdf")
+        self.log("Procesando")
         
     def setLayer(self): 
         self.layer = self.dlg.layerSelect.currentLayer()
@@ -236,7 +236,7 @@ class Geopriv:
             self.previewDataTable.setHorizontalHeaderItem(i+2, QTableWidgetItem(field))
             
         for i in range(0, rowCount):
-            for j in range(0, colCount):
+            for j in range(0, colCount): 
                 info = ""
                 if j == 0:
                     info = data.layerData[i]['lat']
@@ -269,8 +269,15 @@ class Geopriv:
         
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
+        
+        self.minK = self.dlg.minKGlobal
+        self.algorithmSelect = self.dlg.algorithmSelect
+        self.gridPrecision = self.dlg.gridPrecision
+        
         self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
         self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
+        
+        
         # show the dialog 
         self.dlg.show()
 

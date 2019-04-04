@@ -135,7 +135,7 @@
                 </widget>
                </item>
                <item row="3" column="2">
-                <widget class="QSpinBox" name="spinBox"/>
+                <widget class="QSpinBox" name="gridPrecision"/>
                </item>
                <item row="2" column="2">
                 <widget class="QComboBox" name="algorithmSelect">
@@ -163,7 +163,7 @@
                 </widget>
                </item>
                <item row="1" column="2">
-                <widget class="QgsSpinBox" name="mQgsSpinBox_2">
+                <widget class="QgsSpinBox" name="minKGlobal">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
