@@ -198,6 +198,16 @@ class Geopriv:
                 self.tr(u'&Geoprivacy Plugin'),
                 action)
             self.iface.removeToolBarIcon(action)
+            
+    def createNewLayer(self, dataModel):
+        uri = "Point?crs=epsg:4326"
+        name = 'Temporary'
+        provider = 'memory'
+        newLayer = QgsVectorLayer(uri, name, provider) 
+        pr = newLayer.dataProvider()
+        pr.addFeatures(dataModel.list2features(dataModel.layerData))
+        vl.updateExtents()
+        
     
     def configSelectedLayerComboBox(self):
         selectLayer = self.dlg.layerSelect
@@ -254,6 +264,7 @@ class Geopriv:
     def processSpatial(self):
         params = {}
         newData = Spatial(self.data, params)
+        self.createNewLayer(newData.newDataModel)
         
         
 

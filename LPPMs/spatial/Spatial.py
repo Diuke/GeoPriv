@@ -2,7 +2,7 @@ from .utils import error
 from .dbscan import dbscan
 from .kmeans import kmeans
 from .models import GridPoint as gp 
-from geoprivacy.utils import DataModel
+from geoprivacy.utils.DataModel import DataModel
 
 #import matplotlib.pyplot as plt
 
@@ -29,7 +29,8 @@ class Spatial:
             #self.dbscan_minSize = params['dbscan_minSize']
             self.dbscan_minSize = 5
         
-        self.execute()
+        self.clusters = self.execute()
+        self.pointList2DataModel()
         
     
     def setPointList(self):
@@ -38,7 +39,7 @@ class Spatial:
             self.point_list.append([p['lat'], p['lng'], p['extraData']])
             
     def pointList2DataModel(self):
-        pass
+        self.newDataModel = DataModel(self.clusters, False)
         
     
     def execute(self):

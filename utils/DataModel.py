@@ -15,7 +15,7 @@ class DataModel:
             self.layerData = self.features2list(data)
             #self.list2features(self.layerData)
         else: 
-            data = self.method2list(layer)
+            self.layerData = self.method2list(layer)
         
     def method2list(self, data):
         list = []
