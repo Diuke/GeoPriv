@@ -217,7 +217,7 @@ class Geopriv:
         
 
     def alerting(self):
-        self.log("asdf")
+        self.log("Procesando")
         
     def setLayer(self): 
         self.layer = self.dlg.layerSelect.currentLayer()
@@ -263,8 +263,15 @@ class Geopriv:
         
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
+        
+        self.minK = self.dlg.minKGlobal
+        self.algorithmSelect = self.dlg.algorithmSelect
+        self.gridPrecision = self.dlg.gridPresicion
+        
         self.dlg.processSpatialButton.clicked.connect(self.alerting)
         self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
+        
+        
         # show the dialog 
         self.dlg.show()
 
