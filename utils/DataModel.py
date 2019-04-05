@@ -1,4 +1,5 @@
 from qgis.core import *
+from PyQt5.QtCore import QVariant
 
 '''
 Data model for a layer to be used
@@ -6,14 +7,28 @@ Separates the layer data and the fields and stores them into python lists for an
 '''
 class DataModel:
     
-    def __init__(self, layer):
+    def __init__(self, layer, isLayer):  
         self.layerData = []
         self.fields = []
-        self.setFieldData(layer.fields().names())
-        data = layer.getFeatures()
-        self.layerData = self.features2list(data)
-        #self.list2features(self.layerData)
+        self.isLayer = isLayer
+        if isLayer:
+            self.setFieldData(layer.fields().names())
+            data = layer.getFeatures()
+            self.layerData = self.features2list(data)
+            #self.list2features(self.layerData)
+        else: 
+            self.layerData = self.method2list(layer)
         
+    def method2list(self, data):
+        list = []
+        for p in data:
+            row = {}
+            row['lat'] = p.lat
+            row['lng'] = p.lon
+            extraData = {'size': p.cont}
+            row['extraData'] = extraData
+            list.append(row)
+        return list
     
     def features2list(self, data):
         list = []
@@ -33,13 +48,22 @@ class DataModel:
         
     def list2features(self, list):
         features = []
+        fields = QgsFields()
         for i, f in enumerate(list):
-            feature = QgsFeature()
-            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(f['lng'],f['lat'])))
+            fields = QgsFields()
+            for key, val in f['extraData'].items():
+                fields.append(QgsField(key, QVariant.Int,'', 100))
+                
+            feature = QgsFeature(fields)
+                
+            a = feature.fields().names()
             for key, val in f['extraData'].items():
                 feature.setAttribute(key, val)
+                
+            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(f['lng'],f['lat'])))
+                
             features.append(feature)
-        return features
+        return fields, features
     
     def getFieldData(self):
         return self.fields

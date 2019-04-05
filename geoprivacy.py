@@ -34,6 +34,8 @@ import os.path
 
 #custom classes
 from .utils.DataModel import DataModel
+from .LPPMs.spatial.Spatial import Spatial
+from nbformat.sign import algorithms
 
 
 class Geopriv:
@@ -85,6 +87,8 @@ class Geopriv:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
+        
+        self.algorithmDict = {0: None, 1: 'K-Means', 2: 'DBSCAN'}
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -197,6 +201,28 @@ class Geopriv:
                 self.tr(u'&Geoprivacy Plugin'),
                 action)
             self.iface.removeToolBarIcon(action)
+            
+    def createNewLayer(self, dataModel):
+        #PARAMETERS FOR THE NEW LAYER
+        uri = "Point?crs=epsg:4326"
+        name = 'Temporary'
+        provider = 'memory'
+         
+        #CREATE NEW TEMPORARY LAYER WITH THE ABOVE PARAMETERS
+        newLayer = self.iface.addVectorLayer(uri, name, provider) 
+        pr = newLayer.dataProvider()
+        
+        #FETCHING FIELDS AND FEATURES
+        fields, features = dataModel.list2features(dataModel.layerData)
+        
+        #ADDING AND UPDATING THE FIELDS
+        pr.addAttributes(fields)
+        newLayer.updateFields()
+        
+        #ADDING AND UPDATING THE FEATURES 
+        pr.addFeatures(features)
+        newLayer.updateExtents()
+        
     
     def configSelectedLayerComboBox(self):
         selectLayer = self.dlg.layerSelect
@@ -206,8 +232,7 @@ class Geopriv:
         for name, l in project_layers.items():
             if isinstance(l, QgsVectorLayer):
                 type = l.geometryType()
-                b = type == QgsWkbTypes.PointGeometry
-                if not (type == QgsWkbTypes.Point or type == QgsWkbTypes.PointGeometry):
+                if type == QgsWkbTypes.Point:
                     layers.append(l)
             else:
                 layers.append(l)
@@ -217,14 +242,14 @@ class Geopriv:
         
 
     def alerting(self):
-        self.log("asdf")
+        self.log("Procesando")
         
     def setLayer(self): 
         self.layer = self.dlg.layerSelect.currentLayer()
         self.populatePreviewDataTable(self.layer)
         
     def populatePreviewDataTable(self, layer):
-        data = DataModel(layer)
+        data = DataModel(layer, True)
         rowCount = 100 if len(data.layerData) >= 100 else len(data.layerData)
         colCount = len(data.fields) + 2
         self.previewDataTable.setRowCount(rowCount)
@@ -236,7 +261,7 @@ class Geopriv:
             self.previewDataTable.setHorizontalHeaderItem(i+2, QTableWidgetItem(field))
             
         for i in range(0, rowCount):
-            for j in range(0, colCount):
+            for j in range(0, colCount): 
                 info = ""
                 if j == 0:
                     info = data.layerData[i]['lat']
@@ -246,9 +271,29 @@ class Geopriv:
                     info = data.layerData[i]['extraData'][data.fields[j-2]]
                     
                 self.previewDataTable.setItem(i, j, QTableWidgetItem(str(info)))
+        self.data = data
                 
     def log(self, msg):
         QgsMessageLog.logMessage(msg, level=Qgis.Info)
+    
+    def processSpatial(self):
+        params = {}
+        params['minK'] = self.minK.value()
+        params['algorithm'] = self.algorithmDict[self.algorithmSelect.currentIndex()]
+        params['gridPrecision'] = self.gridPrecision.value()
+        if params['algorithm'] is not None:
+            if params['algorithm'] == 'K-Means':
+                params['kmeans_k'] = self.numberOfClusters.value()
+                params['kmeans_seed'] = self.randomSeed.value()
+            elif params['algorithm'] == 'DBSCAN':
+                params['dbscan_r'] = self.radius.value()
+                params['dbscan_minSize'] = self.minClusterSize.value()
+                
+            
+            
+        newData = Spatial(self.data, params)
+        self.createNewLayer(newData.newDataModel)
+        
         
 
     def run(self):
@@ -263,8 +308,25 @@ class Geopriv:
         
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
-        self.dlg.processSpatialButton.clicked.connect(self.alerting)
+        
+        #Globals
+        self.minK = self.dlg.minKGlobal
+        self.algorithmSelect = self.dlg.algorithmSelect
+        self.gridPrecision = self.dlg.gridPrecision
+        
+        #K-Means
+        self.numberOfClusters = self.dlg.clustersNumber
+        self.randomSeed = self.dlg.randomSeed
+        
+        #DBSCAN
+        self.radius = self.dlg.radius
+        self.minClusterSize = self.dlg.minClusterSize
+        
+        #Events
+        self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
         self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
+        
+        
         # show the dialog 
         self.dlg.show()
 
