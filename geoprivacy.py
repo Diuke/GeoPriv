@@ -35,6 +35,7 @@ import os.path
 #custom classes
 from .utils.DataModel import DataModel
 from .LPPMs.spatial.Spatial import Spatial
+from nbformat.sign import algorithms
 
 
 class Geopriv:
@@ -86,6 +87,8 @@ class Geopriv:
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         self.first_start = None
+        
+        self.algorithmDict = {0: None, 1: 'K-Means', 2: 'DBSCAN'}
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -200,13 +203,25 @@ class Geopriv:
             self.iface.removeToolBarIcon(action)
             
     def createNewLayer(self, dataModel):
+        #PARAMETERS FOR THE NEW LAYER
         uri = "Point?crs=epsg:4326"
         name = 'Temporary'
         provider = 'memory'
-        newLayer = QgsVectorLayer(uri, name, provider) 
+         
+        #CREATE NEW TEMPORARY LAYER WITH THE ABOVE PARAMETERS
+        newLayer = self.iface.addVectorLayer(uri, name, provider) 
         pr = newLayer.dataProvider()
-        pr.addFeatures(dataModel.list2features(dataModel.layerData))
-        vl.updateExtents()
+        
+        #FETCHING FIELDS AND FEATURES
+        fields, features = dataModel.list2features(dataModel.layerData)
+        
+        #ADDING AND UPDATING THE FIELDS
+        pr.addAttributes(fields)
+        newLayer.updateFields()
+        
+        #ADDING AND UPDATING THE FEATURES 
+        pr.addFeatures(features)
+        newLayer.updateExtents()
         
     
     def configSelectedLayerComboBox(self):
@@ -263,6 +278,19 @@ class Geopriv:
     
     def processSpatial(self):
         params = {}
+        params['minK'] = self.minK.value()
+        params['algorithm'] = self.algorithmDict[self.algorithmSelect.currentIndex()]
+        params['gridPrecision'] = self.gridPrecision.value()
+        if params['algorithm'] is not None:
+            if params['algorithm'] == 'K-Means':
+                params['kmeans_k'] = self.numberOfClusters.value()
+                params['kmeans_seed'] = self.randomSeed.value()
+            elif params['algorithm'] == 'DBSCAN':
+                params['dbscan_r'] = self.radius.value()
+                params['dbscan_minSize'] = self.minClusterSize.value()
+                
+            
+            
         newData = Spatial(self.data, params)
         self.createNewLayer(newData.newDataModel)
         
@@ -281,15 +309,20 @@ class Geopriv:
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
         
+        #Globals
         self.minK = self.dlg.minKGlobal
         self.algorithmSelect = self.dlg.algorithmSelect
+        self.gridPrecision = self.dlg.gridPrecision
         
-        self.gridPrecision = self.dlg.gridPresicion
+        #K-Means
         self.numberOfClusters = self.dlg.clustersNumber
         self.randomSeed = self.dlg.randomSeed
+        
+        #DBSCAN
         self.radius = self.dlg.radius
         self.minClusterSize = self.dlg.minClusterSize
         
+        #Events
         self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
         self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
