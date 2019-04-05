@@ -10,23 +10,23 @@ class Spatial:
     
     def __init__(self, dataModel, params):
         self.model = dataModel
-        #self.minK = params['minK']
-        self.minK = 10
-        #self.algorithm = params['algorithm']
-        self.algorithm = 'K-Means'
-        #self.dec_points = params['gridPrecision']
-        self.dec_points = 3
+        self.minK = params['minK']
+        #self.minK = 10
+        self.algorithm = params['algorithm']
+        #self.algorithm = 'K-Means'
+        self.dec_points = params['gridPrecision']
+        #self.dec_points = 3
         
         if self.algorithm == 'K-Means':
-            #self.kmeans_k = params['kmeans_k']
-            self.kmeans_k = 20
-            #self.kmeans_seed = params['kmeans_seed']
-            self.kmeans_seed = 1
+            self.kmeans_k = params['kmeans_k']
+            #self.kmeans_k = 20
+            self.kmeans_seed = params['kmeans_seed']
+            #self.kmeans_seed = 1
         elif self.algorithm == 'DBSCAN':
-            #self.dbscan_r = params['dbscan_r']
-            self.dbscan_r = 10**(-1)
-            #self.dbscan_minSize = params['dbscan_minSize']
-            self.dbscan_minSize = 5
+            self.dbscan_r = params['dbscan_r']
+            #self.dbscan_r = 10**(-1)
+            self.dbscan_minSize = params['dbscan_minSize']
+            #self.dbscan_minSize = 5
         
         self.clusters = self.execute().cluster_list
         self.pointList2DataModel()
