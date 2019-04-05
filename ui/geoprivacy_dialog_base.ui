@@ -212,7 +212,7 @@
                 </widget>
                </item>
                <item row="2" column="2">
-                <widget class="QgsSpinBox" name="mQgsSpinBox">
+                <widget class="QgsSpinBox" name="clustersNumber">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
@@ -222,7 +222,7 @@
                 </widget>
                </item>
                <item row="4" column="2">
-                <widget class="QgsSpinBox" name="mQgsSpinBox_3"/>
+                <widget class="QgsSpinBox" name="randomSeed"/>
                </item>
               </layout>
              </widget>
@@ -264,10 +264,10 @@
                 </widget>
                </item>
                <item row="2" column="2">
-                <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+                <widget class="QDoubleSpinBox" name="radius"/>
                </item>
                <item row="4" column="2">
-                <widget class="QgsSpinBox" name="mQgsSpinBox_4">
+                <widget class="QgsSpinBox" name="minClusterSize">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                    <horstretch>0</horstretch>
