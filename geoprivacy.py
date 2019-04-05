@@ -283,7 +283,12 @@ class Geopriv:
         
         self.minK = self.dlg.minKGlobal
         self.algorithmSelect = self.dlg.algorithmSelect
-        self.gridPrecision = self.dlg.gridPrecision
+        
+        self.gridPrecision = self.dlg.gridPresicion
+        self.numberOfClusters = self.dlg.clustersNumber
+        self.randomSeed = self.dlg.randomSeed
+        self.radius = self.dlg.radius
+        self.minClusterSize = self.dlg.minClusterSize
         
         self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
         self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
