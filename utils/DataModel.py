@@ -6,14 +6,26 @@ Separates the layer data and the fields and stores them into python lists for an
 '''
 class DataModel:
     
-    def __init__(self, layer):
+    def __init__(self, layer, isLayer):
         self.layerData = []
         self.fields = []
-        self.setFieldData(layer.fields().names())
-        data = layer.getFeatures()
-        self.layerData = self.features2list(data)
-        #self.list2features(self.layerData)
+        if isLayer:
+            self.setFieldData(layer.fields().names())
+            data = layer.getFeatures()
+            self.layerData = self.features2list(data)
+            #self.list2features(self.layerData)
+        else: 
+            self.layerData = self.method2list(layer)
         
+    def method2list(self, data):
+        list = []
+        for p in data:
+            row = {}
+            row['lat'] = p.lat
+            row['lng'] = p.lon
+            extraData = {'size': p.cont}
+            row['extraData'] = extraData
+        return list
     
     def features2list(self, data):
         list = []
