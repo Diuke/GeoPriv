@@ -1,3 +1,4 @@
+import math
 from .utils import error
 from .dbscan import dbscan
 from .kmeans import kmeans
@@ -28,7 +29,26 @@ class Spatial:
             self.dbscan_minSize = params['dbscan_minSize']
             #self.dbscan_minSize = 5
         
-        self.clusters = self.execute().cluster_list
+        result = self.execute()
+        if result != None:
+            self.clusters = result.cluster_list
+        else:
+            return
+        
+        while not self.correct_clusters():
+            for cluster in self.clusters:
+                if cluster.cont < self.minK:
+                    min_dist = float('inf')
+                    min_cluster = None
+                    for i, cluster2 in enumerate(self.clusters):
+                        if cluster != cluster2:
+                            distance = self.cluster_distance(cluster, cluster2)
+                            if distance < min_dist:
+                                min_dist = distance
+                                min_index = i
+                    self.clusters[min_index].cont += cluster.cont
+                    self.clusters.remove(cluster)
+          
         self.pointList2DataModel()
         
     
@@ -40,7 +60,16 @@ class Spatial:
     def pointList2DataModel(self):
         self.newDataModel = DataModel(self.clusters, False)
         
-    
+    def cluster_distance(self, c1, c2):
+        dist = float(math.sqrt((c1.lat - c2.lat)**2 + (c1.lon - c2.lon)**2))
+        return dist
+        
+    def correct_clusters(self):
+        for cluster in self.clusters:
+            if cluster.cont < self.minK:
+                return False
+        return True
+        
     def execute(self):
         #0: lat, 1: lng
         self.setPointList()
@@ -64,6 +93,9 @@ class Spatial:
             #err = error.error(data.cluster_list)
             #print(err)
             print(data)
+            
+        else: 
+            data = None
         
         return data
             

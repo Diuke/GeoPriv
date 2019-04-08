@@ -11,7 +11,7 @@ class Kmeans:
         self.cluster_list = []
         self.ready_points = []
         self.point_list = []
-        self.mink = 0
+        self.mink = mink
         self.min_lat = 99999
         self.max_lat = -99999
         self.min_lon = 99999
@@ -81,6 +81,7 @@ class Kmeans:
         #self.print_clusters()
         for c in self.ready_points:
             self.cluster_list.append(c)
+            
 
     """
     Checks if every centroid is locked. Locked means its centroid didn't changed in the last iteration.
