@@ -31,8 +31,8 @@ class GridPoint:
             temp_lat = float(point[0])
             temp_lon = float(point[1])
             temp_extra = point[2]
-            gp = GeoPoint.GeoPoint(temp_lat, temp_lon, temp_extra)
-            gp.round_lat_lon(digits)
+            gp = GeoPoint.GeoPoint(temp_lat, temp_lon, digits, temp_extra)
+            #gp.round_lat_lon(digits)
             geo_point_list.append(gp)
             if temp_lon > max_lon:
                 max_lon = temp_lon
@@ -43,12 +43,17 @@ class GridPoint:
         for point in geo_point_list:
             grid_point = GridPoint(point.latitude, point.longitude, point.calc_id(), point.extra)
             # print(grid_point.id)
-            if not grid_dict.__contains__(grid_point.id):
+            if  grid_point.id not in grid_dict:
                 grid_dict[grid_point.id] = grid_point
+            else: 
+                grid_dict[grid_point.id].lat += grid_point.lat
+                grid_dict[grid_point.id].lon += grid_point.lon
             grid_dict[grid_point.id].grouped += 1
 
         grid_list = []
         for point in grid_dict.values():
+            point.lat = point.lat / point.grouped
+            point.lon = point.lon / point.grouped   
             grid_list.append(point)
             #print(str(point.lat) + "," + str(point.lon) + "," + str(point.grouped))
         return grid_list

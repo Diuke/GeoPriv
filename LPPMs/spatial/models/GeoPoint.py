@@ -5,26 +5,23 @@ Consist of latitude, longitue only.
 
 
 class GeoPoint:
-    def __init__(self, lat, lon, extra):
+    def __init__(self, lat, lon, scale, extra):
         self.latitude = lat
         self.longitude = lon
         self.extra = extra
         self.val = 0
-
-    def round_lat_lon(self, decimal_digits):
-        scale = float(10**decimal_digits)
-
-        temp_lat = round(self.latitude * scale)
-        temp_lon = round(self.longitude * scale)
-
-        self.latitude = float(temp_lat/scale)
-        self.longitude = float(temp_lon / scale)
+        self.scale = float(10**scale)        
 
     """
     Returns the id of the point to be grouped concatenating latitude and longitude.
     """
     def calc_id(self):
-        self.val = str(self.latitude) + str(self.longitude)
+        temp_lat = round(self.latitude * self.scale)
+        temp_lon = round(self.longitude * self.scale)
+
+        temp_lat = float(temp_lat/self.scale)
+        temp_lon = float(temp_lon / self.scale)
+        self.val = str(temp_lat) + str(temp_lon)
         return self.val
 
     def __repr__(self):

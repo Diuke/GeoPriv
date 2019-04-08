@@ -5,7 +5,7 @@ class DBScan:
     ready_points = []
 
     def __init__(self, point_list, mink):
-        #self.point_list = point_list
+        self.point_list = []
         self.cluster_list = []
         for p in point_list:
             if p.grouped >= mink:
@@ -27,12 +27,14 @@ class DBScan:
                 for test in c.points:
                     for p2 in self.point_list:
                         if not taken.__contains__(p2):
-                            if test.calc_distance(p2.lat, p2.lon) <= eps:
+                            dist = test.calc_distance(p2.lat, p2.lon) 
+                            if dist <= eps:
                                 taken.add(p2)
-                                cont += point.grouped
+                                cont += p2.grouped
                                 c.add_point(p2)
-                if c.cont >= min_size:
+                if cont >= min_size:
                     self.cluster_list.append(c)
+                cont = 0
         for ready in self.ready_points:
             self.cluster_list.append(ready)
         self.calculate_centroid()
