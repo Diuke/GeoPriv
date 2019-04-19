@@ -35,7 +35,9 @@ class Spatial:
         else:
             return
         
-        while not self.correct_clusters():
+        times = 0
+        while not self.correct_clusters() and times < 100:
+            times += 1
             for cluster in self.clusters:
                 if cluster.cont < self.minK:
                     min_dist = float('inf')
@@ -50,6 +52,11 @@ class Spatial:
                     self.clusters.remove(cluster)
           
         self.pointList2DataModel()
+        
+    def calculateError(self):
+        if self.newDataModel is None or self.model is None:
+            return -1
+        err = 0
         
     
     def setPointList(self):

@@ -63,6 +63,7 @@ class Kmeans:
     Selects random points and iterates to find the clusters
     """
     def calculate_clusters(self, n):
+        iterations = 0
         taken = set()
         random.seed(self.seed)
         for i in range(n):
@@ -74,7 +75,8 @@ class Kmeans:
             lon = self.point_list[pos].lon
             self.cluster_list.append(Cluster(lat, lon))
         self.assign_clusters()
-        while not self.all_locked(self.cluster_list):
+        while not self.all_locked(self.cluster_list) and iterations < 1000:
+            iterations += 1
             for c in self.cluster_list:
                 c.adjust_centroid()
             self.assign_clusters()

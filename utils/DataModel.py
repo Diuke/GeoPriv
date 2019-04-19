@@ -38,9 +38,9 @@ class DataModel:
             row['lat'] = feature.geometry().asPoint().y()
             extraData = {}
             for field in self.getFieldData():
-                if feature.attribute(field) != row['lng'] and feature.attribute(field) != row['lat']: 
-                    a = feature.attribute(field)
-                    extraData[field] = feature.attribute(field)
+                #if feature.attribute(field) != row['lng'] and feature.attribute(field) != row['lat']: 
+                a = feature.attribute(field)
+                extraData[field] = feature.attribute(field)
             row['extraData'] = extraData
             list.append(row)
         return list

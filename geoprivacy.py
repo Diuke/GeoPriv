@@ -172,7 +172,7 @@ class Geopriv:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
+            self.iface.addPluginToVectorMenu(
                 self.menu,
                 action)
 
@@ -197,7 +197,7 @@ class Geopriv:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginMenu(
+            self.iface.removePluginVectorMenu(
                 self.tr(u'&Geoprivacy Plugin'),
                 action)
             self.iface.removeToolBarIcon(action)
@@ -205,7 +205,7 @@ class Geopriv:
     def createNewLayer(self, dataModel):
         #PARAMETERS FOR THE NEW LAYER
         uri = "Point?crs=epsg:4326"
-        name = 'Temporary'
+        name = self.algorithmDict[self.algorithmSelect.currentIndex()]
         provider = 'memory'
          
         #CREATE NEW TEMPORARY LAYER WITH THE ABOVE PARAMETERS
@@ -274,9 +274,12 @@ class Geopriv:
         self.data = data
                 
     def log(self, msg):
-        QgsMessageLog.logMessage(msg, level=Qgis.Info)
+        # QgsMessageLog.logMessage(msg, level=Qgis.Info)
+        self.resultsLog.addItem(msg)
     
     def processSpatial(self):
+        self.tabs.setCurrentIndex(3)
+        self.log("Starting spatial clustering.")
         params = {}
         params['minK'] = self.minK.value()
         params['algorithm'] = self.algorithmDict[self.algorithmSelect.currentIndex()]
@@ -288,26 +291,31 @@ class Geopriv:
             elif params['algorithm'] == 'DBSCAN':
                 params['dbscan_r'] = self.radius.value()
                 params['dbscan_minSize'] = self.minClusterSize.value()
-                
-            
-            
+        self.log("Variables loaded")            
+        self.log("Starting clustering.")    
         newData = Spatial(self.data, params)
+        self.log(params['algorithm'] + " processing was successful.")
+        self.log("Creating new temporal layer.")
         self.createNewLayer(newData.newDataModel)
-        
+        self.log("Temporal layer " + params['algorithm'] + " created.")
         
 
     def run(self):
         """Run method that performs all the real work"""
- 
+        
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
             self.dlg = GeoprivDialog()
-            
+            #Events
+            self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
+            self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
+        self.resultsLog = self.dlg.resultsLog
+        self.tabs = self.dlg.pluginTabs
         
         #Globals
         self.minK = self.dlg.minKGlobal
@@ -321,10 +329,6 @@ class Geopriv:
         #DBSCAN
         self.radius = self.dlg.radius
         self.minClusterSize = self.dlg.minClusterSize
-        
-        #Events
-        self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
-        self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
         
         # show the dialog 
