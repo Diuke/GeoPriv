@@ -172,7 +172,7 @@ class Geopriv:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
+            self.iface.addPluginToVectorMenu(
                 self.menu,
                 action)
 
@@ -197,15 +197,16 @@ class Geopriv:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginMenu(
+            self.iface.removePluginVectorMenu(
                 self.tr(u'&Geoprivacy Plugin'),
                 action)
             self.iface.removeToolBarIcon(action)
             
     def createNewLayer(self, dataModel):
         #PARAMETERS FOR THE NEW LAYER
-        uri = "Point?crs=epsg:4326"
-        name = 'Temporary'
+        layerCrs = self.layer.sourceCrs().authid()
+        uri = "Point?crs="+layerCrs
+        name = self.algorithmDict[self.algorithmSelect.currentIndex()]
         provider = 'memory'
          
         #CREATE NEW TEMPORARY LAYER WITH THE ABOVE PARAMETERS
@@ -274,9 +275,12 @@ class Geopriv:
         self.data = data
                 
     def log(self, msg):
-        QgsMessageLog.logMessage(msg, level=Qgis.Info)
+        # QgsMessageLog.logMessage(msg, level=Qgis.Info)
+        self.resultsLog.addItem(msg)
     
     def processSpatial(self):
+        self.tabs.setCurrentIndex(3)
+        self.log("Starting spatial clustering.")
         params = {}
         params['minK'] = self.minK.value()
         params['algorithm'] = self.algorithmDict[self.algorithmSelect.currentIndex()]
@@ -288,26 +292,61 @@ class Geopriv:
             elif params['algorithm'] == 'DBSCAN':
                 params['dbscan_r'] = self.radius.value()
                 params['dbscan_minSize'] = self.minClusterSize.value()
-                
+        hasError = False
+        if params['minK'] == 0:
+            hasError = True
+            self.log("Minimum K must be greater than 0")
+        if params['algorithm'] == 0:
+            self.log("You must select an algorithm.")
+            hasError = True
+        if params['gridPrecision'] == 0:
+            self.log("Grid decimal precision must be greater than 0")
+            hasError = True
+        if params['algorithm'] == 'K-Means':
+            if params['kmeans_k'] == 0:
+                self.log("Number of clusters must be greater than 0")
+                hasError = True
+        elif params['algorithm'] == 'DBSCAN':
+            if params['dbscan_r'] == 0:
+                self.log("Radius must be greater than 0")
+                hasError = True 
+            if params['dbscan_minSize'] == 0:
+                self.log("DBSCAN Minimum cluster size must be greater than 0")
+                hasError = True
+        if hasError:
+            return 
             
-            
-        newData = Spatial(self.data, params)
-        self.createNewLayer(newData.newDataModel)
-        
+        self.log("Variables loaded")            
+        self.log("Starting clustering.")   
+        try:
+            newData = Spatial(self.data, params)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
+        except:
+            self.log("An error occurred during processing")
+        else:
+            self.log(params['algorithm'] + " processing was successful.")
+            self.log("Creating new temporal layer.")
+            self.createNewLayer(newData.newDataModel)
+            self.log("Temporal layer " + params['algorithm'] + " created.")
         
 
     def run(self):
         """Run method that performs all the real work"""
- 
+        
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
             self.dlg = GeoprivDialog()
-            
+            #Events
+            self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
+            self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
+        self.resultsLog = self.dlg.resultsLog
+        self.tabs = self.dlg.pluginTabs
         
         #Globals
         self.minK = self.dlg.minKGlobal
@@ -322,15 +361,10 @@ class Geopriv:
         self.radius = self.dlg.radius
         self.minClusterSize = self.dlg.minClusterSize
         
-        #Events
-        self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
-        self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
-        
         
         # show the dialog 
         self.dlg.show()
 
-        self.log("RUNNING")
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>687</width>
-    <height>666</height>
+    <width>693</width>
+    <height>677</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -57,7 +57,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="pluginTabs">
      <property name="cursor">
       <cursorShape>ArrowCursor</cursorShape>
      </property>
@@ -87,8 +87,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>643</width>
-              <height>489</height>
+              <width>649</width>
+              <height>500</height>
              </rect>
             </property>
             <widget class="QGroupBox" name="groupBox_2">
@@ -135,7 +135,11 @@
                 </widget>
                </item>
                <item row="3" column="2">
-                <widget class="QSpinBox" name="gridPrecision"/>
+                <widget class="QSpinBox" name="gridPrecision">
+                 <property name="maximum">
+                  <number>10</number>
+                 </property>
+                </widget>
                </item>
                <item row="2" column="2">
                 <widget class="QComboBox" name="algorithmSelect">
@@ -169,6 +173,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="maximum">
+                  <number>99999</number>
                  </property>
                 </widget>
                </item>
@@ -218,6 +225,9 @@
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
+                 </property>
+                 <property name="maximum">
+                  <number>999999</number>
                  </property>
                 </widget>
                </item>
@@ -278,6 +288,9 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="maximum">
+                  <number>99999</number>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -317,6 +330,111 @@
       <attribute name="title">
        <string>Results</string>
       </attribute>
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>651</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Metrics</string>
+       </property>
+       <widget class="QWidget" name="gridLayoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>20</y>
+          <width>651</width>
+          <height>80</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="gridLayout_4">
+         <item row="0" column="1">
+          <widget class="QLabel" name="QError">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="OtherErrorLabel">
+           <property name="text">
+            <string>Point Loss</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="labelQError">
+           <property name="text">
+            <string>Error</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="pointLoss">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QScrollArea" name="scrollArea_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>120</y>
+         <width>651</width>
+         <height>421</height>
+        </rect>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>649</width>
+          <height>419</height>
+         </rect>
+        </property>
+        <widget class="QWidget" name="verticalLayoutWidget">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>651</width>
+           <height>421</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QListWidget" name="resultsLog"/>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </widget>
      </widget>
     </widget>
    </item>

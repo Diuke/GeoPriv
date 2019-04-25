@@ -4,6 +4,8 @@ from .dbscan import dbscan
 from .kmeans import kmeans
 from .models import GridPoint as gp 
 from geoprivacy.utils.DataModel import DataModel
+from numpy.f2py.auxfuncs import throw_error
+from math import sqrt
 
 #import matplotlib.pyplot as plt
 
@@ -11,6 +13,7 @@ class Spatial:
     
     def __init__(self, dataModel, params):
         self.model = dataModel
+        self.quadraticError = 0
         self.minK = params['minK']
         #self.minK = 10
         self.algorithm = params['algorithm']
@@ -35,7 +38,11 @@ class Spatial:
         else:
             return
         
+        times = 0
         while not self.correct_clusters():
+            if times > 100:
+                raise Exception("The algorithms is taking too much time to finish (Clustering is not convergent)")
+            times += 1
             for cluster in self.clusters:
                 if cluster.cont < self.minK:
                     min_dist = float('inf')
@@ -47,10 +54,37 @@ class Spatial:
                                 min_dist = distance
                                 min_index = i
                     self.clusters[min_index].cont += cluster.cont
+                    self.clusters[min_index].points.extend(cluster.points)
                     self.clusters.remove(cluster)
           
         self.pointList2DataModel()
+        self.quadraticError = self.calculateError()
+        self.pointLoss = self.calculatePointLoss()
         
+    def calculateError(self):
+        if self.newDataModel is None or self.model is None:
+            return -1
+        
+        error = 0
+        cont = 0
+        for cluster in self.clusters:
+            for point in cluster.points:
+                cont += 1
+                dist = sqrt((point.lat - cluster.lat)**2 + (point.lon - cluster.lon)**2)
+                error += dist**2
+        error = error / cont
+        return error
+    
+    def calculatePointLoss(self):
+        if self.newDataModel is None or self.model is None:
+            return -1
+    
+        contOriginal = 0
+        contProcessed = 0
+        for cluster in self.clusters:
+            contOriginal += cluster.cont
+        contProcessed = len(self.model.layerData)
+        return contOriginal - contProcessed
     
     def setPointList(self):
         self.point_list = []
