@@ -62,7 +62,7 @@
       <cursorShape>ArrowCursor</cursorShape>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tabSearch">
       <attribute name="title">
@@ -314,7 +314,181 @@
       <attribute name="title">
        <string>N-RandK</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout"/>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="0">
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="0">
+          <widget class="QPushButton" name="pushButton">
+           <property name="text">
+            <string>Process Data</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="0">
+        <widget class="QScrollArea" name="scrollArea_3">
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents_3">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>651</width>
+            <height>500</height>
+           </rect>
+          </property>
+          <widget class="QGroupBox" name="groupBox_6">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>10</y>
+             <width>631</width>
+             <height>221</height>
+            </rect>
+           </property>
+           <property name="title">
+            <string>Parameters</string>
+           </property>
+           <widget class="QWidget" name="gridLayoutWidget_7">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>30</y>
+              <width>601</width>
+              <height>165</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_10">
+             <item row="3" column="1">
+              <widget class="QgsSpinBox" name="mQgsSpinBox_12"/>
+             </item>
+             <item row="2" column="1">
+              <widget class="QgsSpinBox" name="mQgsSpinBox_11"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>TextLabel</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>Radius</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Grid decimal precision</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QgsSpinBox" name="mQgsSpinBox_10">
+               <property name="value">
+                <number>4</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Number of random points</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QgsSpinBox" name="mQgsSpinBox_9"/>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Laplace noise</string>
+      </attribute>
+      <widget class="QScrollArea" name="scrollArea_4">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>651</width>
+         <height>531</height>
+        </rect>
+       </property>
+       <property name="widgetResizable">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="scrollAreaWidgetContents_4">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>649</width>
+          <height>529</height>
+         </rect>
+        </property>
+        <widget class="QGroupBox" name="groupBox_7">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>631</width>
+           <height>111</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Parameters</string>
+         </property>
+         <widget class="QWidget" name="gridLayoutWidget_6">
+          <property name="geometry">
+           <rect>
+            <x>9</x>
+            <y>30</y>
+            <width>611</width>
+            <height>69</height>
+           </rect>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_8">
+           <item row="0" column="1">
+            <widget class="QgsSpinBox" name="mQgsSpinBox"/>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Sensitivity</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+        <widget class="QPushButton" name="pushButton_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>480</y>
+           <width>631</width>
+           <height>25</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Process Data</string>
+         </property>
+        </widget>
+       </widget>
+      </widget>
      </widget>
      <widget class="QWidget" name="tabSettings">
       <attribute name="title">
