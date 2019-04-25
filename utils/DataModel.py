@@ -4,6 +4,7 @@ from PyQt5.QtCore import QVariant
 '''
 Data model for a layer to be used
 Separates the layer data and the fields and stores them into python lists for an easier use
+Layer data: List of {lat, long, extraData}
 '''
 class DataModel:
     
@@ -11,7 +12,7 @@ class DataModel:
         self.layerData = []
         self.fields = []
         self.isLayer = isLayer
-        if isLayer:
+        if isLayer: 
             self.setFieldData(layer.fields().names())
             data = layer.getFeatures()
             self.layerData = self.features2list(data)

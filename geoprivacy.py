@@ -204,7 +204,8 @@ class Geopriv:
             
     def createNewLayer(self, dataModel):
         #PARAMETERS FOR THE NEW LAYER
-        uri = "Point?crs=epsg:4326"
+        layerCrs = self.layer.sourceCrs().authid()
+        uri = "Point?crs="+layerCrs
         name = self.algorithmDict[self.algorithmSelect.currentIndex()]
         provider = 'memory'
          
@@ -291,13 +292,43 @@ class Geopriv:
             elif params['algorithm'] == 'DBSCAN':
                 params['dbscan_r'] = self.radius.value()
                 params['dbscan_minSize'] = self.minClusterSize.value()
+        hasError = False
+        if params['minK'] == 0:
+            hasError = True
+            self.log("Minimum K must be greater than 0")
+        if params['algorithm'] == 0:
+            self.log("You must select an algorithm.")
+            hasError = True
+        if params['gridPrecision'] == 0:
+            self.log("Grid decimal precision must be greater than 0")
+            hasError = True
+        if params['algorithm'] == 'K-Means':
+            if params['kmeans_k'] == 0:
+                self.log("Number of clusters must be greater than 0")
+                hasError = True
+        elif params['algorithm'] == 'DBSCAN':
+            if params['dbscan_r'] == 0:
+                self.log("Radius must be greater than 0")
+                hasError = True 
+            if params['dbscan_minSize'] == 0:
+                self.log("DBSCAN Minimum cluster size must be greater than 0")
+                hasError = True
+        if hasError:
+            return 
+            
         self.log("Variables loaded")            
-        self.log("Starting clustering.")    
-        newData = Spatial(self.data, params)
-        self.log(params['algorithm'] + " processing was successful.")
-        self.log("Creating new temporal layer.")
-        self.createNewLayer(newData.newDataModel)
-        self.log("Temporal layer " + params['algorithm'] + " created.")
+        self.log("Starting clustering.")   
+        try:
+            newData = Spatial(self.data, params)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
+        except:
+            self.log("An error occurred during processing")
+        else:
+            self.log(params['algorithm'] + " processing was successful.")
+            self.log("Creating new temporal layer.")
+            self.createNewLayer(newData.newDataModel)
+            self.log("Temporal layer " + params['algorithm'] + " created.")
         
 
     def run(self):
@@ -334,7 +365,6 @@ class Geopriv:
         # show the dialog 
         self.dlg.show()
 
-        self.log("RUNNING")
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
