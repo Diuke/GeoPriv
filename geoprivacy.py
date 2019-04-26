@@ -35,6 +35,8 @@ import os.path
 #custom classes
 from .utils.DataModel import DataModel
 from .LPPMs.spatial.Spatial import Spatial
+from .LPPMs.nrandk.NRandK import NRandK
+from .LPPMs.geoi.Laplacian import Laplacian
 from nbformat.sign import algorithms
 
 
@@ -47,7 +49,7 @@ class Geopriv:
     #previewDataTable
     previewDataTable = None
     
-    #de la forma lat, lng, data
+    #de la forma lat, lon, data
     layerData = None
     
     #Datos completos en su formato original
@@ -172,7 +174,7 @@ class Geopriv:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
+            self.iface.addPluginToVectorMenu(
                 self.menu,
                 action)
 
@@ -197,15 +199,16 @@ class Geopriv:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginMenu(
+            self.iface.removePluginVectorMenu(
                 self.tr(u'&Geoprivacy Plugin'),
                 action)
             self.iface.removeToolBarIcon(action)
             
-    def createNewLayer(self, dataModel):
+    def createNewLayer(self, newLayerName, dataModel):
         #PARAMETERS FOR THE NEW LAYER
-        uri = "Point?crs=epsg:4326"
-        name = 'Temporary'
+        layerCrs = self.layer.sourceCrs().authid()
+        uri = "Point?crs="+layerCrs
+        name = newLayerName
         provider = 'memory'
          
         #CREATE NEW TEMPORARY LAYER WITH THE ABOVE PARAMETERS
@@ -266,7 +269,7 @@ class Geopriv:
                 if j == 0:
                     info = data.layerData[i]['lat']
                 elif j == 1:
-                    info = data.layerData[i]['lng']
+                    info = data.layerData[i]['lon']
                 else:
                     info = data.layerData[i]['extraData'][data.fields[j-2]]
                     
@@ -274,9 +277,98 @@ class Geopriv:
         self.data = data
                 
     def log(self, msg):
-        QgsMessageLog.logMessage(msg, level=Qgis.Info)
+        # QgsMessageLog.logMessage(msg, level=Qgis.Info)
+        self.resultsLog.addItem(msg)
+        
+    def processNRankdK(self):
+        self.tabs.setCurrentIndex(4)
+        
+        #Parameter values assingment
+        self.log("Starting NRandK.")
+        gridPrecision = self.nrandkGridPrecision.value()
+        n = self.nrandkN.value()
+        k = self.nrandkK.value()
+        sRadius = self.nrandkSRadius.value()
+        lRadius = self.nrandkLRadius.value()
+        randomSeed = self.nrandkRandomSeed.value()
+        
+        #Validation
+        hasError = False
+        if gridPrecision == 0:
+            self.log("Grid decimal precision must be greater than 0")
+            hasError = True
+        elif n == 0:
+            self.log("Number of points generated (N) must be greater than 0")
+            hasError = True
+        elif k == 0:
+            self.log("Minimum points (K) must be greater than 0")
+            hasError = True
+        elif sRadius == 0:
+            self.log("Small radius must be greater than 0")
+            hasError = True
+        elif lRadius == 0:
+            self.log("Large radius must be greater than 0")
+            hasError = True
+        elif lRadius <= sRadius:
+            self.log("Large radius must be greater than Small Radius")
+            hasError = True
+        
+        self.log("Variables loaded")            
+        self.log("Starting clustering.")  
+        
+        #Processing
+        try:
+            newData = NRandK(k, n, gridPrecision, sRadius, lRadius, randomSeed, self.data)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
+        except:
+            self.log("An error occurred during processing")
+        else:
+            self.log("NRandK processing was successful.")
+            self.log("Creating new temporal layer.")
+        #Layer generation
+            self.createNewLayer("NRandK", newData.newDataModel)
+            self.log("Temporal layer NRandK created.")
+            self.log("Quadratic Error: " + str(newData.quadraticError))
+            
+    def processGeoi(self):
+        self.tabs.setCurrentIndex(4)
+        
+        #Parameter values assingment
+        self.log("Starting spatial clustering.")
+        sensitivity = self.geoiSensitivity.value()
+        randomSeed = self.geoiRandomSeed.value()
+        
+        #Validations
+        hasError = False
+        if sensitivity == 0:
+            self.log("Sensitivity must be greater than 0")
+            hasError = True
+        
+        self.log("Variables loaded")            
+        self.log("Starting clustering.")   
+        
+        #Processing
+        try:
+            newData = Laplacian(sensitivity, randomSeed, self.data)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
+        except:
+            self.log("An error occurred during processing")
+        else:
+            self.log("Laplace Noise processing was successful.")
+            self.log("Creating new temporal layer.")
+        #Layer generation
+            name = "Laplace"
+            self.createNewLayer(name, newData.newDataModel)
+            self.log("Temporal layer Laplace created.")
+            self.log("Quadratic Error: " + str(newData.quadraticError))
     
     def processSpatial(self):
+        self.tabs.setCurrentIndex(4)
+        
+        #Parameter values assingment
+        self.log("Starting spatial clustering.")
         params = {}
         params['minK'] = self.minK.value()
         params['algorithm'] = self.algorithmDict[self.algorithmSelect.currentIndex()]
@@ -288,49 +380,99 @@ class Geopriv:
             elif params['algorithm'] == 'DBSCAN':
                 params['dbscan_r'] = self.radius.value()
                 params['dbscan_minSize'] = self.minClusterSize.value()
-                
-            
-            
-        newData = Spatial(self.data, params)
-        self.createNewLayer(newData.newDataModel)
         
+        #Validations
+        hasError = False
+        if params['minK'] == 0:
+            hasError = True
+            self.log("Minimum K must be greater than 0")
+        if params['algorithm'] == 0:
+            self.log("You must select an algorithm.")
+            hasError = True
+        if params['gridPrecision'] == 0:
+            self.log("Grid decimal precision must be greater than 0")
+            hasError = True
+        if params['algorithm'] == 'K-Means':
+            if params['kmeans_k'] == 0:
+                self.log("Number of clusters must be greater than 0")
+                hasError = True
+        elif params['algorithm'] == 'DBSCAN':
+            if params['dbscan_r'] == 0:
+                self.log("Radius must be greater than 0")
+                hasError = True 
+            if params['dbscan_minSize'] == 0:
+                self.log("DBSCAN Minimum cluster size must be greater than 0")
+                hasError = True
+        if hasError:
+            return 
+        
+        self.log("Variables loaded")            
+        self.log("Starting clustering.")   
+        
+        #Processing
+        try:
+            newData = Spatial(self.data, params)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
+        except:
+            self.log("An error occurred during processing")
+        else:
+            self.log(params['algorithm'] + " processing was successful.")
+            self.log("Creating new temporal layer.")
+        #Layer generation
+            name = self.algorithmDict[self.algorithmSelect.currentIndex()]
+            self.createNewLayer(name, newData.newDataModel)
+            self.log("Temporal layer " + params['algorithm'] + " created.")
+            self.log("Quadratic Error: " + str(newData.quadraticError))
         
 
     def run(self):
         """Run method that performs all the real work"""
- 
+        
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
             self.dlg = GeoprivDialog()
-            
+            #Events
+            self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
+            self.dlg.processNRandKButton.clicked.connect(self.processNRankdK)
+            self.dlg.processGeoiButton.clicked.connect(self.processGeoi)
+            self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
+        self.resultsLog = self.dlg.resultsLog
+        self.tabs = self.dlg.pluginTabs
         
+        #NRandK Form Controls
+        self.nrandkGridPrecision = self.dlg.nrandkGridPrecision
+        self.nrandkN = self.dlg.nrandkN
+        self.nrandkK = self.dlg.nrandkK
+        self.nrandkSRadius = self.dlg.nrandkSRadius
+        self.nrandkLRadius = self.dlg.nrandkLRadius
+        self.nrandkRandomSeed = self.dlg.nrandkRandomSeed
+        
+        #GeoI Form Controls
+        self.geoiSensitivity = self.dlg.geoiSensitivity
+        self.geoiRandomSeed = self.dlg.geoiRandomSeed
+        
+        #Spatial Form Controls
         #Globals
         self.minK = self.dlg.minKGlobal
         self.algorithmSelect = self.dlg.algorithmSelect
         self.gridPrecision = self.dlg.gridPrecision
-        
         #K-Means
         self.numberOfClusters = self.dlg.clustersNumber
         self.randomSeed = self.dlg.randomSeed
-        
         #DBSCAN
         self.radius = self.dlg.radius
         self.minClusterSize = self.dlg.minClusterSize
-        
-        #Events
-        self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
-        self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
         
         # show the dialog 
         self.dlg.show()
 
-        self.log("RUNNING")
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
