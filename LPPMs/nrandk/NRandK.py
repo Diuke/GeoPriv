@@ -1,19 +1,24 @@
 import math
 import random
+import copy
 from geoprivacy.utils.DataModel import DataModel
+from matplotlib.cbook import maxdict
 
 class NRandK:
-    def __init__(self, k, n, gridSize, dataModel):
+    def __init__(self, k, n, gridSize, sRadius, lRadius, seed, dataModel):
+        random.seed(seed)
         self.k = k
         self.n = 4
         self.gridSize = gridSize
-        self.sRadius = 0.001
-        self.lRadius = 0.01
-        self.model = dataModel
+        self.sRadius = sRadius
+        self.lRadius = lRadius
+        self.model = copy.deepcopy(dataModel)
         self.dataModel2Points()
         self.gridify()
         self.process()
         self.pointList2DataModel()
+        self.quadraticError = self.calculateError()
+        self.pointLoss = 0
         
     def pointList2DataModel(self):
         self.newDataModel = DataModel(self.points, False) 
@@ -51,18 +56,28 @@ class NRandK:
             maxDist = -99999999
             for i in range(0, self.n):
                 tempLat, templon = self.generateRandomPoint(point['radius'], point)
-                if self.dist(point['lat'], point['lon'], tempLat, templon) > maxDist:
+                dist = self.dist(point['lat'], point['lon'], tempLat, templon)
+                if dist > maxDist:
+                    maxDist = dist
                     maxLat = tempLat
                     maxlon = templon 
             point['lat'] = maxLat
             point['lon'] = maxlon
+            point['error'] = maxDist
                 
     def generateRandomPoint(self, radius, point):
-        randRadius = random.uniform(0, radius)
-        print(randRadius)
-        randLat = (randRadius * math.cos(random.uniform(0,2*math.pi))) + point['lat']
-        randlon = (randRadius * math.sin(random.uniform(0,2*math.pi))) + point['lon']
+        randRadius = radius * math.sqrt(random.random())
+
+        randLat = (randRadius * math.cos(2*math.pi*random.random())) + point['lat']
+        randlon = (randRadius * math.sin(2*math.pi*random.random())) + point['lon']
         return randLat, randlon
+    
+    def calculateError(self):
+        error = 0
+        for point in self.points:
+            error += point['error']**2
+        error = error/len(self.points)
+        return error
     
     def dist(self, lat1, lon1, lat2, lon2):
         return math.sqrt((lat2 - lat1)**2 + (lon2 - lon1)**2)

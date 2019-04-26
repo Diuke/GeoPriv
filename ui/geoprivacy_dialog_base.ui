@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GeoPrivWindow</class>
- <widget class="QDialog" name="GeoPrivWindow">
+ <class>GeoPriv</class>
+ <widget class="QDialog" name="GeoPriv">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -62,7 +62,7 @@
       <cursorShape>ArrowCursor</cursorShape>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabSearch">
       <attribute name="title">
@@ -94,7 +94,7 @@
             <widget class="QGroupBox" name="groupBox_2">
              <property name="geometry">
               <rect>
-               <x>20</x>
+               <x>10</x>
                <y>10</y>
                <width>621</width>
                <height>181</height>
@@ -136,8 +136,14 @@
                </item>
                <item row="3" column="2">
                 <widget class="QSpinBox" name="gridPrecision">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
                  <property name="maximum">
                   <number>10</number>
+                 </property>
+                 <property name="value">
+                  <number>3</number>
                  </property>
                 </widget>
                </item>
@@ -174,8 +180,14 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
                  <property name="maximum">
                   <number>99999</number>
+                 </property>
+                 <property name="value">
+                  <number>10</number>
                  </property>
                 </widget>
                </item>
@@ -226,8 +238,14 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
                  <property name="maximum">
                   <number>999999</number>
+                 </property>
+                 <property name="value">
+                  <number>10</number>
                  </property>
                 </widget>
                </item>
@@ -278,6 +296,12 @@
                  <property name="decimals">
                   <number>8</number>
                  </property>
+                 <property name="singleStep">
+                  <double>0.010000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>0.010000000000000</double>
+                 </property>
                 </widget>
                </item>
                <item row="4" column="2">
@@ -288,8 +312,14 @@
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
                  <property name="maximum">
                   <number>99999</number>
+                 </property>
+                 <property name="value">
+                  <number>10</number>
                  </property>
                 </widget>
                </item>
@@ -318,7 +348,7 @@
        <item row="1" column="0">
         <layout class="QGridLayout" name="gridLayout_5">
          <item row="0" column="0">
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="processNRandKButton">
            <property name="text">
             <string>Process Data</string>
            </property>
@@ -346,7 +376,7 @@
              <x>10</x>
              <y>10</y>
              <width>631</width>
-             <height>221</height>
+             <height>321</height>
             </rect>
            </property>
            <property name="title">
@@ -358,27 +388,14 @@
               <x>10</x>
               <y>30</y>
               <width>601</width>
-              <height>165</height>
+              <height>281</height>
              </rect>
             </property>
             <layout class="QGridLayout" name="gridLayout_10">
-             <item row="3" column="1">
-              <widget class="QgsSpinBox" name="mQgsSpinBox_12"/>
-             </item>
-             <item row="2" column="1">
-              <widget class="QgsSpinBox" name="mQgsSpinBox_11"/>
-             </item>
              <item row="3" column="0">
-              <widget class="QLabel" name="label_11">
-               <property name="text">
-                <string>TextLabel</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
               <widget class="QLabel" name="label_12">
                <property name="text">
-                <string>Radius</string>
+                <string>Small Radius</string>
                </property>
               </widget>
              </item>
@@ -389,22 +406,86 @@
                </property>
               </widget>
              </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Number of random points generated (N)</string>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="1">
-              <widget class="QgsSpinBox" name="mQgsSpinBox_10">
+              <widget class="QgsSpinBox" name="nrandkN">
                <property name="value">
                 <number>4</number>
                </property>
               </widget>
              </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_14">
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_15">
                <property name="text">
-                <string>Number of random points</string>
+                <string>Minimum Points (K)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QgsDoubleSpinBox" name="nrandkSRadius">
+               <property name="decimals">
+                <number>7</number>
+               </property>
+               <property name="singleStep">
+                <double>0.001000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.001000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>Large Radius</string>
                </property>
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QgsSpinBox" name="mQgsSpinBox_9"/>
+              <widget class="QgsSpinBox" name="nrandkGridPrecision">
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="value">
+                <number>3</number>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QgsSpinBox" name="nrandkK">
+               <property name="value">
+                <number>10</number>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label38">
+               <property name="text">
+                <string>Random Seed</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QgsDoubleSpinBox" name="nrandkLRadius">
+               <property name="decimals">
+                <number>7</number>
+               </property>
+               <property name="singleStep">
+                <double>0.001000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.003000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QgsSpinBox" name="nrandkRandomSeed"/>
              </item>
             </layout>
            </widget>
@@ -424,7 +505,7 @@
          <x>10</x>
          <y>10</y>
          <width>651</width>
-         <height>531</height>
+         <height>501</height>
         </rect>
        </property>
        <property name="widgetResizable">
@@ -436,7 +517,7 @@
           <x>0</x>
           <y>0</y>
           <width>649</width>
-          <height>529</height>
+          <height>499</height>
          </rect>
         </property>
         <widget class="QGroupBox" name="groupBox_7">
@@ -445,7 +526,7 @@
            <x>10</x>
            <y>10</y>
            <width>631</width>
-           <height>111</height>
+           <height>131</height>
           </rect>
          </property>
          <property name="title">
@@ -454,15 +535,15 @@
          <widget class="QWidget" name="gridLayoutWidget_6">
           <property name="geometry">
            <rect>
-            <x>9</x>
+            <x>10</x>
             <y>30</y>
             <width>611</width>
-            <height>69</height>
+            <height>92</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_8">
-           <item row="0" column="1">
-            <widget class="QgsSpinBox" name="mQgsSpinBox"/>
+           <item row="2" column="1">
+            <widget class="QgsSpinBox" name="geoiRandomSeed"/>
            </item>
            <item row="0" column="0">
             <widget class="QLabel" name="label_3">
@@ -471,23 +552,43 @@
              </property>
             </widget>
            </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Random Seed</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QgsDoubleSpinBox" name="geoiSensitivity">
+             <property name="decimals">
+              <number>5</number>
+             </property>
+             <property name="singleStep">
+              <double>0.001000000000000</double>
+             </property>
+             <property name="value">
+              <double>0.001000000000000</double>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </widget>
-        <widget class="QPushButton" name="pushButton_2">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>480</y>
-           <width>631</width>
-           <height>25</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Process Data</string>
-         </property>
-        </widget>
        </widget>
+      </widget>
+      <widget class="QPushButton" name="processGeoiButton">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>520</y>
+         <width>651</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Process Data</string>
+       </property>
       </widget>
      </widget>
      <widget class="QWidget" name="tabSettings">
@@ -554,20 +655,6 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>TextLabel</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </widget>
@@ -615,6 +702,11 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>QgsDoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>qgsdoublespinbox.h</header>
+  </customwidget>
   <customwidget>
    <class>QgsMapLayerComboBox</class>
    <extends>QComboBox</extends>

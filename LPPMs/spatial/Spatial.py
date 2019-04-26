@@ -1,17 +1,18 @@
 import math
+import copy
 from .utils import error
 from .dbscan import dbscan
 from .kmeans import kmeans
 from .models import GridPoint as gp 
 from geoprivacy.utils.DataModel import DataModel
-from math import sqrt
+import math
 
 #import matplotlib.pyplot as plt
 
 class Spatial:
     
     def __init__(self, dataModel, params):
-        self.model = dataModel
+        self.model = copy.deepcopy(dataModel)
         self.quadraticError = 0
         self.minK = params['minK']
         #self.minK = 10
@@ -69,21 +70,21 @@ class Spatial:
         for cluster in self.clusters:
             for point in cluster.points:
                 cont += 1
-                dist = sqrt((point.lat - cluster.lat)**2 + (point.lon - cluster.lon)**2)
+                dist = math.sqrt((point.lat - cluster.lat)**2 + (point.lon - cluster.lon)**2)
                 error += dist**2
         error = error / cont
         return error
     
     def calculatePointLoss(self):
         if self.newDataModel is None or self.model is None:
-            return -1
+            return 0
     
         contOriginal = 0
         contProcessed = 0
         for cluster in self.clusters:
             contOriginal += cluster.cont
         contProcessed = len(self.model.layerData)
-        return contOriginal - contProcessed
+        return math.fabs(contOriginal - contProcessed)
     
     def setPointList(self):
         self.point_list = []
@@ -91,7 +92,14 @@ class Spatial:
             self.point_list.append([p['lat'], p['lon'], p['extraData']])
             
     def pointList2DataModel(self):
-        self.newDataModel = DataModel(self.clusters, False)
+        clusters4DataModel = []
+        for cluster in self.clusters:
+            clusters4DataModel.append({
+                'lat': cluster.lat,
+                'lon': cluster.lon,
+                'cont': cluster.cont
+            })
+        self.newDataModel = DataModel(clusters4DataModel, False)
         
     def cluster_distance(self, c1, c2):
         dist = float(math.sqrt((c1.lat - c2.lat)**2 + (c1.lon - c2.lon)**2))

@@ -26,8 +26,8 @@ class DataModel:
             row = {}
             row['lat'] = p['lat']
             row['lon'] = p['lon']
-            if hasattr(p, 'cont'):
-                extraData = {'size': p.cont}
+            if 'cont' in p:
+                extraData = {'size': p['cont']}
             else:
                 extraData = p['extraData']
             row['extraData'] = extraData

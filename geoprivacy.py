@@ -36,6 +36,7 @@ import os.path
 from .utils.DataModel import DataModel
 from .LPPMs.spatial.Spatial import Spatial
 from .LPPMs.nrandk.NRandK import NRandK
+from .LPPMs.geoi.Laplacian import Laplacian
 from nbformat.sign import algorithms
 
 
@@ -203,11 +204,11 @@ class Geopriv:
                 action)
             self.iface.removeToolBarIcon(action)
             
-    def createNewLayer(self, dataModel):
+    def createNewLayer(self, newLayerName, dataModel):
         #PARAMETERS FOR THE NEW LAYER
         layerCrs = self.layer.sourceCrs().authid()
         uri = "Point?crs="+layerCrs
-        name = self.algorithmDict[self.algorithmSelect.currentIndex()]
+        name = newLayerName
         provider = 'memory'
          
         #CREATE NEW TEMPORARY LAYER WITH THE ABOVE PARAMETERS
@@ -278,9 +279,95 @@ class Geopriv:
     def log(self, msg):
         # QgsMessageLog.logMessage(msg, level=Qgis.Info)
         self.resultsLog.addItem(msg)
+        
+    def processNRankdK(self):
+        self.tabs.setCurrentIndex(4)
+        
+        #Parameter values assingment
+        self.log("Starting NRandK.")
+        gridPrecision = self.nrandkGridPrecision.value()
+        n = self.nrandkN.value()
+        k = self.nrandkK.value()
+        sRadius = self.nrandkSRadius.value()
+        lRadius = self.nrandkLRadius.value()
+        randomSeed = self.nrandkRandomSeed.value()
+        
+        #Validation
+        hasError = False
+        if gridPrecision == 0:
+            self.log("Grid decimal precision must be greater than 0")
+            hasError = True
+        elif n == 0:
+            self.log("Number of points generated (N) must be greater than 0")
+            hasError = True
+        elif k == 0:
+            self.log("Minimum points (K) must be greater than 0")
+            hasError = True
+        elif sRadius == 0:
+            self.log("Small radius must be greater than 0")
+            hasError = True
+        elif lRadius == 0:
+            self.log("Large radius must be greater than 0")
+            hasError = True
+        elif lRadius <= sRadius:
+            self.log("Large radius must be greater than Small Radius")
+            hasError = True
+        
+        self.log("Variables loaded")            
+        self.log("Starting clustering.")  
+        
+        #Processing
+        try:
+            newData = NRandK(k, n, gridPrecision, sRadius, lRadius, randomSeed, self.data)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
+        except:
+            self.log("An error occurred during processing")
+        else:
+            self.log("NRandK processing was successful.")
+            self.log("Creating new temporal layer.")
+        #Layer generation
+            self.createNewLayer("NRandK", newData.newDataModel)
+            self.log("Temporal layer NRandK created.")
+            self.log("Quadratic Error: " + str(newData.quadraticError))
+            
+    def processGeoi(self):
+        self.tabs.setCurrentIndex(4)
+        
+        #Parameter values assingment
+        self.log("Starting spatial clustering.")
+        sensitivity = self.geoiSensitivity.value()
+        randomSeed = self.geoiRandomSeed.value()
+        
+        #Validations
+        hasError = False
+        if sensitivity == 0:
+            self.log("Sensitivity must be greater than 0")
+            hasError = True
+        
+        self.log("Variables loaded")            
+        self.log("Starting clustering.")   
+        
+        #Processing
+        try:
+            newData = Laplacian(sensitivity, randomSeed, self.data)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
+        except:
+            self.log("An error occurred during processing")
+        else:
+            self.log("Laplace Noise processing was successful.")
+            self.log("Creating new temporal layer.")
+        #Layer generation
+            name = "Laplace"
+            self.createNewLayer(name, newData.newDataModel)
+            self.log("Temporal layer Laplace created.")
+            self.log("Quadratic Error: " + str(newData.quadraticError))
     
     def processSpatial(self):
-        self.tabs.setCurrentIndex(3)
+        self.tabs.setCurrentIndex(4)
+        
+        #Parameter values assingment
         self.log("Starting spatial clustering.")
         params = {}
         params['minK'] = self.minK.value()
@@ -293,6 +380,8 @@ class Geopriv:
             elif params['algorithm'] == 'DBSCAN':
                 params['dbscan_r'] = self.radius.value()
                 params['dbscan_minSize'] = self.minClusterSize.value()
+        
+        #Validations
         hasError = False
         if params['minK'] == 0:
             hasError = True
@@ -316,22 +405,25 @@ class Geopriv:
                 hasError = True
         if hasError:
             return 
-            
+        
         self.log("Variables loaded")            
         self.log("Starting clustering.")   
-        #newData = Spatial(self.data, params)
         
+        #Processing
         try:
-            newData = NRandK(10, 4, 3, self.data)
-            #self.dlg.QError.setText(str(newData.quadraticError))
-            #self.dlg.pointLoss.setText(str(newData.pointLoss))
+            newData = Spatial(self.data, params)
+            self.dlg.QError.setText(str(newData.quadraticError))
+            self.dlg.pointLoss.setText(str(newData.pointLoss))
         except:
             self.log("An error occurred during processing")
         else:
             self.log(params['algorithm'] + " processing was successful.")
             self.log("Creating new temporal layer.")
-            self.createNewLayer(newData.newDataModel)
+        #Layer generation
+            name = self.algorithmDict[self.algorithmSelect.currentIndex()]
+            self.createNewLayer(name, newData.newDataModel)
             self.log("Temporal layer " + params['algorithm'] + " created.")
+            self.log("Quadratic Error: " + str(newData.quadraticError))
         
 
     def run(self):
@@ -344,6 +436,8 @@ class Geopriv:
             self.dlg = GeoprivDialog()
             #Events
             self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
+            self.dlg.processNRandKButton.clicked.connect(self.processNRankdK)
+            self.dlg.processGeoiButton.clicked.connect(self.processGeoi)
             self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
         self.previewDataTable = self.dlg.previewDataTable 
@@ -351,15 +445,26 @@ class Geopriv:
         self.resultsLog = self.dlg.resultsLog
         self.tabs = self.dlg.pluginTabs
         
+        #NRandK Form Controls
+        self.nrandkGridPrecision = self.dlg.nrandkGridPrecision
+        self.nrandkN = self.dlg.nrandkN
+        self.nrandkK = self.dlg.nrandkK
+        self.nrandkSRadius = self.dlg.nrandkSRadius
+        self.nrandkLRadius = self.dlg.nrandkLRadius
+        self.nrandkRandomSeed = self.dlg.nrandkRandomSeed
+        
+        #GeoI Form Controls
+        self.geoiSensitivity = self.dlg.geoiSensitivity
+        self.geoiRandomSeed = self.dlg.geoiRandomSeed
+        
+        #Spatial Form Controls
         #Globals
         self.minK = self.dlg.minKGlobal
         self.algorithmSelect = self.dlg.algorithmSelect
         self.gridPrecision = self.dlg.gridPrecision
-        
         #K-Means
         self.numberOfClusters = self.dlg.clustersNumber
         self.randomSeed = self.dlg.randomSeed
-        
         #DBSCAN
         self.radius = self.dlg.radius
         self.minClusterSize = self.dlg.minClusterSize

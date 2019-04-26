@@ -1,36 +1,48 @@
 import math
+import copy
 import random
-from models.Point import Point
+from geoprivacy.utils.DataModel import DataModel
 import numpy as np
 
 class Laplacian:
     
-    def __init__(self, sensitivity, points):
-        random.seed(0)
+    def __init__(self, sensitivity, seed, dataModel):
+        random.seed(seed)
         self.sensitivity = sensitivity
-        self.pointList = []
-        for point in points:
-            self.pointList.append(Point(point['lat'], point['lng'], point['extraData']))
+        self.points = []
+        self.model = copy.deepcopy(dataModel)
+        self.dataModel2Points()
         self.applyNoise()
-        self.printPoints()
+        self.quadraticError = self.calculateError()
+        self.pointLoss = 0
+        self.pointList2DataModel()
+        
+    def pointList2DataModel(self):
+        self.newDataModel = DataModel(self.points, False) 
+        
+    def dataModel2Points(self):
+        self.points = self.model.layerData
+        
+    def calculateError(self):
+        error = 0
+        for point in self.points:
+            error += point['error']**2
+        error = error/len(self.points)
+        return error
     
     def applyNoise(self):
-        for point in self.pointList:
-            point.lat = self.laplace(point.lat, self.sensitivity)
-            point.lon = self.laplace(point.lon, self.sensitivity)
+        for point in self.points:
+            oldLat = copy.copy(point['lat'])
+            oldLon = copy.copy(point['lon']) 
+            point['lat'] = self.laplace(point['lat'], self.sensitivity)
+            point['lon'] = self.laplace(point['lon'], self.sensitivity)
+            point['error'] = self.dist(oldLat, oldLon, point['lat'], point['lon'])
                 
     def laplace(self, center, sensitivity):
         res = 1/(2*sensitivity) * math.exp(-(math.fabs(random.random() - center)/sensitivity))
         res = np.random.laplace(center, sensitivity)
         return res
     
-    
-    def printPoints(self):
-        for point in self.pointList:
-            print(str(point.lat) + ", " + str(point.lon))
-        
-points = [
-    {'lat': 10.9183063, 'lng': -74.8106452, 'extraData': {}},
-    {'lat': 10.9425505, 'lng': -74.7687247, 'extraData': {}},    
-]
-l = Laplacian(0.001, points)
+    def dist(self, lat1, lon1, lat2, lon2):
+        return math.sqrt((lat2 - lat1)**2 + (lon2 - lon1)**2)
+
