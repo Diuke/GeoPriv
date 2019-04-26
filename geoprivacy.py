@@ -35,6 +35,7 @@ import os.path
 #custom classes
 from .utils.DataModel import DataModel
 from .LPPMs.spatial.Spatial import Spatial
+from .LPPMs.nrandk.NRandK import NRandK
 from nbformat.sign import algorithms
 
 
@@ -47,7 +48,7 @@ class Geopriv:
     #previewDataTable
     previewDataTable = None
     
-    #de la forma lat, lng, data
+    #de la forma lat, lon, data
     layerData = None
     
     #Datos completos en su formato original
@@ -267,7 +268,7 @@ class Geopriv:
                 if j == 0:
                     info = data.layerData[i]['lat']
                 elif j == 1:
-                    info = data.layerData[i]['lng']
+                    info = data.layerData[i]['lon']
                 else:
                     info = data.layerData[i]['extraData'][data.fields[j-2]]
                     
@@ -318,10 +319,12 @@ class Geopriv:
             
         self.log("Variables loaded")            
         self.log("Starting clustering.")   
+        #newData = Spatial(self.data, params)
+        
         try:
-            newData = Spatial(self.data, params)
-            self.dlg.QError.setText(str(newData.quadraticError))
-            self.dlg.pointLoss.setText(str(newData.pointLoss))
+            newData = NRandK(10, 4, 3, self.data)
+            #self.dlg.QError.setText(str(newData.quadraticError))
+            #self.dlg.pointLoss.setText(str(newData.pointLoss))
         except:
             self.log("An error occurred during processing")
         else:

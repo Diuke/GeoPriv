@@ -4,7 +4,6 @@ from .dbscan import dbscan
 from .kmeans import kmeans
 from .models import GridPoint as gp 
 from geoprivacy.utils.DataModel import DataModel
-from numpy.f2py.auxfuncs import throw_error
 from math import sqrt
 
 #import matplotlib.pyplot as plt
@@ -89,7 +88,7 @@ class Spatial:
     def setPointList(self):
         self.point_list = []
         for p in self.model.layerData:
-            self.point_list.append([p['lat'], p['lng'], p['extraData']])
+            self.point_list.append([p['lat'], p['lon'], p['extraData']])
             
     def pointList2DataModel(self):
         self.newDataModel = DataModel(self.clusters, False)
@@ -105,7 +104,7 @@ class Spatial:
         return True
         
     def execute(self):
-        #0: lat, 1: lng
+        #0: lat, 1: lon
         self.setPointList()
         #print(len(point_list))
         
@@ -119,14 +118,12 @@ class Spatial:
             data.calculate_clusters(self.kmeans_k)
             #err = error.error(data.cluster_list)
             #print(err) 
-            print(data)
             
         elif self.algorithm == 'DBSCAN':
             data = dbscan.DBScan(grid_list, self.minK)
             data.fit(self.dbscan_r, self.dbscan_minSize)
             #err = error.error(data.cluster_list)
             #print(err)
-            print(data)
             
         else: 
             data = None

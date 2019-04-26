@@ -24,9 +24,12 @@ class DataModel:
         list = []
         for p in data:
             row = {}
-            row['lat'] = p.lat
-            row['lng'] = p.lon
-            extraData = {'size': p.cont}
+            row['lat'] = p['lat']
+            row['lon'] = p['lon']
+            if hasattr(p, 'cont'):
+                extraData = {'size': p.cont}
+            else:
+                extraData = p['extraData']
             row['extraData'] = extraData
             list.append(row)
         return list
@@ -35,11 +38,11 @@ class DataModel:
         list = []
         for feature in data:
             row = {}
-            row['lng'] = feature.geometry().asPoint().x()
+            row['lon'] = feature.geometry().asPoint().x()
             row['lat'] = feature.geometry().asPoint().y()
             extraData = {}
             for field in self.getFieldData():
-                #if feature.attribute(field) != row['lng'] and feature.attribute(field) != row['lat']: 
+                #if feature.attribute(field) != row['lon'] and feature.attribute(field) != row['lat']: 
                 a = feature.attribute(field)
                 extraData[field] = feature.attribute(field)
             row['extraData'] = extraData
@@ -61,7 +64,7 @@ class DataModel:
             for key, val in f['extraData'].items():
                 feature.setAttribute(key, val)
                 
-            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(f['lng'],f['lat'])))
+            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(f['lon'],f['lat'])))
                 
             features.append(feature)
         return fields, features
