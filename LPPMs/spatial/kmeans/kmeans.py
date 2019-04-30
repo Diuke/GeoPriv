@@ -1,11 +1,19 @@
 from builtins import range
 import random
 
-"""
-K-means algorithm implementation for GridPoints
-"""
 class Kmeans:
+    """
+    K-means algorithm implementation for GridPoints as a clustering algorithm
+    """
     def __init__(self, point_list, mink, seed):
+        """Constructor
+        :param mink: minimum points to be considered cluster globaly from Spatial
+        :type mink: number
+        :param point_list: List of points to be processed
+        :type point_list: List 
+        :param seed: Random seed for reproducibility
+        :type seed: number
+        """
         self.locked = 0
         self.seed = seed
         self.cluster_list = []
@@ -18,36 +26,35 @@ class Kmeans:
         self.max_lon = -99999
         self.cluster_list = []
         #print(point_list)
-        for p in point_list:
+        for p in point_list: #Remove points that already have K points clustered from gridification
             if p.grouped >= mink:
                 c = Cluster(p.lat, p.lon)
                 c.cont = p.grouped
                 self.ready_points.append(c)
-                #print(str(c.lat) + "," + str(c.lon) + "," + str(c.cont))
             else:
                 self.point_list.append(p)
                 self.min_lat = min(self.min_lat, p.lat)
                 self.max_lat = max(self.max_lat, p.lat)
                 self.min_lon = min(self.min_lon, p.lon)
                 self.max_lon = max(self.max_lon, p.lon)
-                #print(str(p.lat) + "," + str(p.lon) + ",1")
-        #self.print_clusters()
-        #print("done")
 
     def error(self):
+        """Calculates quadratic error"""
         e = 0
         for c in self.cluster_list:
             e += c.error()
         return e
 
     def clean_clusters(self):
+        """Removes all points from all clusters"""
         for c in self.cluster_list:
             c.points = []
 
-    """
-    Assigns each point to the closest cluster using the calc_distance() method.
-    """
+    
     def assign_clusters(self):
+        """Assigns each point to the closest cluster using the calc_distance() method.
+        Uses euclidean distance
+        """
         self.clean_clusters()
         for point in self.point_list:
             min_dist = float('inf')
@@ -59,10 +66,12 @@ class Kmeans:
                     min_cluster = cluster
             min_cluster.add_point(point)
 
-    """
-    Selects random points and iterates to find the clusters
-    """
+    
     def calculate_clusters(self, n):
+        """Selects random points and iterates to find the clusters
+        :param: n: Number of clusters specified
+        :type: n: number
+        """
         iterations = 0
         taken = set()
         random.seed(self.seed)
@@ -75,7 +84,7 @@ class Kmeans:
             lon = self.point_list[pos].lon
             self.cluster_list.append(Cluster(lat, lon))
         self.assign_clusters()
-        while not self.all_locked(self.cluster_list) and iterations < 1000:
+        while not self.all_locked(self.cluster_list) and iterations < 1000: #Allows 1000 iterations
             iterations += 1
             for c in self.cluster_list:
                 c.adjust_centroid()
@@ -85,17 +94,22 @@ class Kmeans:
             self.cluster_list.append(c)
             
 
-    """
-    Checks if every centroid is locked. Locked means its centroid didn't changed in the last iteration.
-    """
     def all_locked(self, cluster_list):
+        """Checks if every centroid is locked. Locked means its centroid didn't changed in the last iteration."""
         for c in cluster_list:
             if not c.lock:
                 return False
         return True
 
 class Cluster:
+    """Cluster model"""
     def __init__(self, lat, lon):
+        """Constructor
+        :param: lat: Latitude
+        :type lat: float
+        :param: lon: Longitude
+        :type lon: float
+        """
         self.cont = 0
         self.points = []
         self.lat = lat
@@ -103,15 +117,20 @@ class Cluster:
         self.lock = False
 
     def error(self):
+        """Quadratic error of the cluster points"""
         e = 0
         for p in self.points:
             e += p.calc_distance(self.lat, self.lon)**2
         return e
 
     def add_point(self, point):
+        """Add point to cluster"""
         self.points.append(point)
 
     def adjust_centroid(self):
+        """Adjusts the centroid of the cluster by calculating the mean of latitudes and longitues 
+        of all points in the cluster
+        """
         cont = 0
         if self.lock:
             return
@@ -130,11 +149,9 @@ class Cluster:
         else:
             prom_lat = self.lat
             prom_lon = self.lon
-        #print(str(prev_lat) + " " + str(prom_lat))
+        
         if abs(prev_lat - prom_lat) < 0.0001 or abs(prev_lon - prom_lon) < 0.0001:
             self.lock = True
-            #Kmeans.locked += 1
-            #print("Lock!" + str(Kmeans.locked))
         else:
             self.lat = prom_lat
             self.lon = prom_lon
