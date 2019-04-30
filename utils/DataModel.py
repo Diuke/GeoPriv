@@ -4,37 +4,56 @@ from PyQt5.QtCore import QVariant
 '''
 Data model for a layer to be used
 Separates the layer data and the fields and stores them into python lists for an easier use
-Layer data: List of {lat, long, extraData}
+Layer data: List of {lat, lon, extraData}
+Has 2 ways to transform data, when it comes from a QgsLayer it is tranformed using features2list
+when it comes from a non-layer data structre the data structure needs to have a structure as follows
+c
+cont is used when grouping values causing them to lose additional information and gaining several points
+as a new field.
 '''
 class DataModel:
     
     def __init__(self, layer, isLayer):  
+        """Constructor
+        :param layer: The data layer or data structure that have the data used to build the DataModel
+        :type layer: QgsLayer or Object
+        :param isLayer: Variable that defines if the incoming data structure is a layer or an object.
+        :type isLayer: boolean
+        """
         self.layerData = []
         self.fields = []
         self.isLayer = isLayer
-        if isLayer: 
-            self.setFieldData(layer.fields().names())
+        
+        if isLayer: #When information comes from a layer the field information and layer features are extracted
             data = layer.getFeatures()
+            self.setFieldData(layer.fields().names(), data)
             self.layerData = self.features2list(data)
-            #self.list2features(self.layerData)
-        else: 
+        else: #else it uses method2list to build a DataModel from an object
             self.layerData = self.method2list(layer)
         
     def method2list(self, data):
+        """Transform data like {lat, lon, extraData} into a DataModel
+        :param data: the data to put into de DataModel
+        :return: The list of the form {lat, lon, extraData}
+        """
         list = []
         for p in data:
             row = {}
             row['lat'] = p['lat']
             row['lon'] = p['lon']
-            if 'cont' in p:
+            if 'cont' in p: 
                 extraData = {'size': p['cont']}
-            else:
+            else: #if the features have other data, pass them to the model extra data.
                 extraData = p['extraData']
             row['extraData'] = extraData
             list.append(row)
         return list
     
     def features2list(self, data):
+        """Transform data from a QGIS Layer to the DataModel
+        :param data: the data to put into de DataModel
+        :return: The list of que form {lat, lon, }
+        """
         list = []
         for feature in data:
             row = {}
@@ -43,7 +62,6 @@ class DataModel:
             extraData = {}
             for field in self.getFieldData():
                 #if feature.attribute(field) != row['lon'] and feature.attribute(field) != row['lat']: 
-                a = feature.attribute(field)
                 extraData[field] = feature.attribute(field)
             row['extraData'] = extraData
             list.append(row)
@@ -51,6 +69,10 @@ class DataModel:
         
         
     def list2features(self, list):
+        """Transform the dataModel list into a list of features to be included into a QgsLayer
+        :param list: Point list
+        :return: fields anf features of the data model made from list.
+        """
         features = []
         fields = QgsFields()
         for i, f in enumerate(list):
@@ -70,12 +92,24 @@ class DataModel:
         return fields, features
     
     def getFieldData(self):
+        """Gets the field list"""
         return self.fields
     
-    def setFieldData(self, fields):
-        self.fields = fields
-        
-    
+    def setFieldData(self, fields, data):
+        """Sets the field list of the DataModel.
+        It removes fields equal to the geographic coordinates of each feature."""
+        self.fields = [] 
+        for feature in data: 
+            for field in fields:
+                if isinstance(feature.attribute(field), float):
+                    lon = feature.geometry().asPoint().x()
+                    lat = feature.geometry().asPoint().y()
+                    if (round(feature.attribute(field), 2) != round(lon, 2) and 
+                        round(feature.attribute(field), 2) != round(lat, 2)):
+                        self.fields.append(field)
+                else:
+                    self.fields.append(field)
+            return
         
         
     

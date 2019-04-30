@@ -9,7 +9,7 @@
         begin                : 2019-01-24
         git sha              : $Format:%H$
         copyright            : (C) 2019 by Juan Duque, Angelly Pugliese
-        email                : pjduque@uninorte.edu.co
+        email                : pjduque@uninorte.edu.co, angellyp@uninorte.edu.co
  ***************************************************************************/
 
 /***************************************************************************
@@ -49,10 +49,10 @@ class Geopriv:
     #previewDataTable
     previewDataTable = None
     
-    #de la forma lat, lon, data
+    #new layer data
     layerData = None
     
-    #Datos completos en su formato original
+    #Complete original layer
     completeLayerData = None
     
     
@@ -205,11 +205,17 @@ class Geopriv:
             self.iface.removeToolBarIcon(action)
             
     def createNewLayer(self, newLayerName, dataModel):
-        #PARAMETERS FOR THE NEW LAYER
+        """Creates a new layer with a specified name and from a DataModel
+        :param newLayerName: Name for the created layer.
+        :type newLayerName: str
+        :param dataModel: DataModel from which the new layer will be constructed.
+        :type dataModel: DataModel
+        """
+        #PARAMETERS FOR THE NEW LAYER (geographic projection matches)
         layerCrs = self.layer.sourceCrs().authid()
         uri = "Point?crs="+layerCrs
         name = newLayerName
-        provider = 'memory'
+        provider = 'memory' #Creates the layer in-memory
          
         #CREATE NEW TEMPORARY LAYER WITH THE ABOVE PARAMETERS
         newLayer = self.iface.addVectorLayer(uri, name, provider) 
@@ -228,6 +234,7 @@ class Geopriv:
         
     
     def configSelectedLayerComboBox(self):
+        """Aplies a filter to only show Point geometry layers in the select layer combo box """
         selectLayer = self.dlg.layerSelect
         layers = []
         selectLayer.setAllowEmptyLayer(False) 
@@ -240,18 +247,20 @@ class Geopriv:
             else:
                 layers.append(l)
         
+        #set the filtered layers for the combo box
         selectLayer.setExceptedLayerList(layers)
         self.setLayer()
         
-
-    def alerting(self):
-        self.log("Procesando")
-        
     def setLayer(self): 
+        """Set the selected layer to the layer global model and fetch the data to the GUI data preview tab"""
         self.layer = self.dlg.layerSelect.currentLayer()
         self.populatePreviewDataTable(self.layer)
         
     def populatePreviewDataTable(self, layer):
+        """Writes the data from layer to the GUI Data Preview tab
+       :param layer: the layer to be processed
+       :type layer: QgsLayer 
+        """
         data = DataModel(layer, True)
         rowCount = 100 if len(data.layerData) >= 100 else len(data.layerData)
         colCount = len(data.fields) + 2
@@ -260,9 +269,11 @@ class Geopriv:
         self.previewDataTable.setHorizontalHeaderItem(0, QTableWidgetItem("Latitude"))
         self.previewDataTable.setHorizontalHeaderItem(1, QTableWidgetItem("Longitude"))
         
+        #Set the headers of the table
         for i, field in enumerate(data.fields):
             self.previewDataTable.setHorizontalHeaderItem(i+2, QTableWidgetItem(field))
             
+        #Populates the table with latitude, longitude and extra data
         for i in range(0, rowCount):
             for j in range(0, colCount): 
                 info = ""
@@ -277,11 +288,13 @@ class Geopriv:
         self.data = data
                 
     def log(self, msg):
+        """Escribe en el log del plugin en la pestaña de resultados"""
         # QgsMessageLog.logMessage(msg, level=Qgis.Info)
         self.resultsLog.addItem(msg)
         
     def processNRankdK(self):
-        self.tabs.setCurrentIndex(4)
+        """Executes the NRandK protection mechanism."""
+        self.goToResultsTab()
         
         #Parameter values assingment
         self.log("Starting NRandK.")
@@ -332,7 +345,8 @@ class Geopriv:
             self.log("Quadratic Error: " + str(newData.quadraticError))
             
     def processGeoi(self):
-        self.tabs.setCurrentIndex(4)
+        """Exectures Geo Indistinguishability protection mechanism"""
+        self.goToResultsTab()
         
         #Parameter values assingment
         self.log("Starting spatial clustering.")
@@ -365,8 +379,8 @@ class Geopriv:
             self.log("Quadratic Error: " + str(newData.quadraticError))
     
     def processSpatial(self):
-        self.tabs.setCurrentIndex(4)
-        
+        """Executes spatial clustering protection mechanism"""
+        self.goToResultsTab()
         #Parameter values assingment
         self.log("Starting spatial clustering.")
         params = {}
@@ -425,6 +439,9 @@ class Geopriv:
             self.log("Temporal layer " + params['algorithm'] + " created.")
             self.log("Quadratic Error: " + str(newData.quadraticError))
         
+    def goToResultsTab(self):
+        """Opens the results tab. Used to show results after processing"""
+        self.tabs.setCurrentIndex(4)
 
     def run(self):
         """Run method that performs all the real work"""
@@ -434,12 +451,13 @@ class Geopriv:
         if self.first_start == True:
             self.first_start = False
             self.dlg = GeoprivDialog()
-            #Events
+            #Events are added here to be loaded only once
             self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
             self.dlg.processNRandKButton.clicked.connect(self.processNRankdK)
             self.dlg.processGeoiButton.clicked.connect(self.processGeoi)
             self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
+        #Loading general controls
         self.previewDataTable = self.dlg.previewDataTable 
         self.configSelectedLayerComboBox()
         self.resultsLog = self.dlg.resultsLog

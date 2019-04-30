@@ -1,29 +1,40 @@
 import math
 from . import GeoPoint
 
-"""
-Abstraction of a gridified point.
-The resulting points after gridification. 
-GridPoints have latitude, longitude and the number of points grouped.
-"""
 class GridPoint:
+    """
+    Abstraction of a gridified point.
+    The resulting points after gridification. 
+    GridPoints have latitude, longitude and the number of points grouped.
+    """
     def __init__(self, lat, lon, id, extra):
+        """Constructor
+        :param lat: latitude
+        :type lat: float
+        :param lon:longitude
+        :type lon: float
+        :param id: concatenation of latitude and longitude after truncation
+        :type id: str
+        :param extra: extra data of the point
+        :type extra: dict
+        """
         self.id = id
         self.lat = lat
         self.lon = lon
         self.extra = extra
         self.grouped = 0
 
-    def __repr__(self):
-        return str(self.lat) + "," + str(self.lon) + "," + str(self.grouped)
-
-    """
-    Gridification method
-    Converts GeoPoints into GridPoints using the latitude and longitude.
-    Returns a list of GridPoints based on the list of GeoPoints received as the parameter lista.
-    """
     @staticmethod
     def gridify(lista, digits):
+        """Gridification method
+        Converts GeoPoints into GridPoints using the latitude and longitude.
+        Truncates latitude and longitude to the digits specified and builds a virtual grid using the truncated coordinates.
+        Returns a list of GridPoints based on the list of GeoPoints received as the parameter lista.
+        :param lista:
+        :type lista: List
+        :param digits: Decimal digits for truncation
+        :type digits: number
+        """
         geo_point_list = []
         max_lon = 0
         min_lon = 0
@@ -58,9 +69,13 @@ class GridPoint:
             #print(str(point.lat) + "," + str(point.lon) + "," + str(point.grouped))
         return grid_list
 
-    """
-    Euclid distance between 2 GridPoints
-    """
     def calc_distance(self, lat, lon):
+        """
+        Euclid distance between 2 GridPoints
+        :param lat: other point latitude
+        :type lat: float
+        :param lon: other point longitude
+        :type lon: float
+        """ 
         dist = float(math.sqrt((self.lat - lat)**2 + (self.lon - lon)**2))
         return dist
