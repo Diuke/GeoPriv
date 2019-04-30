@@ -29,7 +29,7 @@ changelog=
 # Tags are comma separated with spaces allowed
 tags=python,location privacy,geoprivacy,privacy protection
 
-#homepage=http://homepage
+#homepage=https://github.com/Diuke/GeoPriv
 category=Vectorial
 icon=geoprivacy/icon.png
 # experimental flag
