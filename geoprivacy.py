@@ -237,24 +237,26 @@ class Geopriv:
         """Aplies a filter to only show Point geometry layers in the select layer combo box """
         selectLayer = self.dlg.layerSelect
         layers = []
-        selectLayer.setAllowEmptyLayer(False) 
+        selectLayer.setAllowEmptyLayer(True) 
         project_layers = QgsProject.instance().layerStore().mapLayers()
         for name, l in project_layers.items():
             if isinstance(l, QgsVectorLayer):
-                type = l.geometryType()
-                if type == QgsWkbTypes.Point:
+                type = l.wkbType()
+                if type != 1:
                     layers.append(l)
             else:
                 layers.append(l)
-        
         #set the filtered layers for the combo box
         selectLayer.setExceptedLayerList(layers)
         self.setLayer()
+        self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
     def setLayer(self): 
         """Set the selected layer to the layer global model and fetch the data to the GUI data preview tab"""
-        self.layer = self.dlg.layerSelect.currentLayer()
-        self.populatePreviewDataTable(self.layer)
+        self.layer = None
+        if self.dlg.layerSelect.currentLayer() != None:
+            self.layer = self.dlg.layerSelect.currentLayer()
+            self.populatePreviewDataTable(self.layer)
         
     def populatePreviewDataTable(self, layer):
         """Writes the data from layer to the GUI Data Preview tab
@@ -455,7 +457,6 @@ class Geopriv:
             self.dlg.processSpatialButton.clicked.connect(self.processSpatial)
             self.dlg.processNRandKButton.clicked.connect(self.processNRankdK)
             self.dlg.processGeoiButton.clicked.connect(self.processGeoi)
-            self.dlg.layerSelect.currentIndexChanged.connect(self.setLayer)
         
         #Loading general controls
         self.previewDataTable = self.dlg.previewDataTable 
