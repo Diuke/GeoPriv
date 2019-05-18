@@ -3,7 +3,7 @@ import copy
 from .dbscan import dbscan
 from .kmeans import kmeans
 from .models import GridPoint as gp 
-from geoprivacy.utils.DataModel import DataModel
+from GeoPriv.utils.DataModel import DataModel 
 import math
 
 #import matplotlib.pyplot as plt
@@ -23,7 +23,8 @@ class Spatial:
         :param params: Object containing necessary parameters for each method.
         """
         # The Data Model is deep copied to be editable separately from the original Data Model
-        self.model = copy.deepcopy(dataModel)
+        #self.model = copy.deepcopy(dataModel)
+        self.model = DataModel(dataModel) #Deep copies the datamodel to be editable
         self.quadraticError = 0
         
         # The params parameter brings all necesary parameters for both spatial clustering methods.
@@ -112,7 +113,7 @@ class Spatial:
             clusters4DataModel.append({
                 'lat': cluster.lat,
                 'lon': cluster.lon,
-                'cont': cluster.cont
+                'extraData': {'cont': cluster.cont}
             })
         self.newDataModel = DataModel(clusters4DataModel, False)
         

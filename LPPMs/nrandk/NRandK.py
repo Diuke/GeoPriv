@@ -1,7 +1,7 @@
 import math
 import random
 import copy
-from geoprivacy.utils.DataModel import DataModel
+from GeoPriv.utils.DataModel import DataModel
 from matplotlib.cbook import maxdict
 
 class NRandK:
@@ -25,7 +25,8 @@ class NRandK:
         self.gridSize = gridSize
         self.sRadius = sRadius
         self.lRadius = lRadius
-        self.model = copy.deepcopy(dataModel) #Deep copies the datamodel to be editable
+        self.model = DataModel(dataModel) #Deep copies the datamodel to be editable
+        #self.model = copy.deepcopy(dataModel) 
         self.dataModel2Points()
         self.gridify() #applies gridification first
         self.process() #Process data secont

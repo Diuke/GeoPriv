@@ -1,5 +1,6 @@
 from qgis.core import *
 from PyQt5.QtCore import QVariant
+import copy
 
 '''
 Data model for a layer to be used
@@ -11,9 +12,13 @@ c
 cont is used when grouping values causing them to lose additional information and gaining several points
 as a new field.
 '''
-class DataModel:
+class DataModel:     
     
-    def __init__(self, layer, isLayer):  
+    def log(self, msg):
+        """Escribe en el log del plugin en la pestaña de resultados"""
+        QgsMessageLog.logMessage(msg, level=Qgis.Info)   
+    
+    def __init__(self, layer, isLayer=None):  
         """Constructor
         :param layer: The data layer or data structure that have the data used to build the DataModel
         :type layer: QgsLayer or Object
@@ -24,12 +29,37 @@ class DataModel:
         self.fields = []
         self.isLayer = isLayer
         
-        if isLayer: #When information comes from a layer the field information and layer features are extracted
+        if isLayer == True: #When information comes from a layer the field information and layer features are extracted
             data = layer.getFeatures()
             self.setFieldData(layer.fields().names(), data)
             self.layerData = self.features2list(data)
-        else: #else it uses method2list to build a DataModel from an object
-            self.layerData = self.method2list(layer)
+            
+        elif isLayer == False: #else it uses method2list to build a DataModel from an object
+            self.layerData, self.fields = self.method2list(layer)
+            
+        elif isLayer == None:
+            self.isLayer = False
+            
+            for field in layer.fields:
+                if isinstance(field, QVariant):
+                    tempField = field
+                else:
+                    tempField = copy.deepcopy(field)
+                self.fields.append(tempField)
+            
+            for row in layer.layerData:
+                tempRow = {}
+                tempRow['lat'] = copy.deepcopy(row['lat'])
+                tempRow['lon'] = copy.deepcopy(row['lon'])
+                tempRow['extraData'] = {}
+                for key, val in row['extraData'].items():
+                    if isinstance(val, QVariant):
+                        tempVal = val
+                        tempRow['extraData'][key] = tempVal
+                    else:
+                        tempRow['extraData'][key] = copy.deepcopy(val)
+                self.layerData.append(tempRow)
+            
         
     def method2list(self, data):
         """Transform data like {lat, lon, extraData} into a DataModel
@@ -37,6 +67,13 @@ class DataModel:
         :return: The list of the form {lat, lon, extraData}
         """
         list = []
+        fields = []
+        for key, val in data[0]['extraData'].items():
+            if key == 'cont': 
+                fields.append('size')
+            else:
+                fields.append(key)
+                    
         for p in data:
             row = {}
             row['lat'] = p['lat']
@@ -47,7 +84,7 @@ class DataModel:
                 extraData = p['extraData']
             row['extraData'] = extraData
             list.append(row)
-        return list
+        return list, fields
     
     def features2list(self, data):
         """Transform data from a QGIS Layer to the DataModel

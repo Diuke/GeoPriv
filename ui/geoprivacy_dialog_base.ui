@@ -21,9 +21,19 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../icon.png</normaloff>../icon.png</iconset>
+    <normaloff>../../../../../../../home/diuke/geoprivacy/icon.png</normaloff>../../../../../../../home/diuke/geoprivacy/icon.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For a tutorial on how to use GeoPriv visit the &lt;a href=&quot;https://diuke.github.io/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GeoPriv Homepage&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="sizePolicy">
@@ -88,7 +98,7 @@
               <x>0</x>
               <y>0</y>
               <width>649</width>
-              <height>500</height>
+              <height>477</height>
              </rect>
             </property>
             <widget class="QGroupBox" name="groupBox_2">
@@ -367,7 +377,7 @@
             <x>0</x>
             <y>0</y>
             <width>651</width>
-            <height>500</height>
+            <height>477</height>
            </rect>
           </property>
           <widget class="QGroupBox" name="groupBox_6">
@@ -505,7 +515,7 @@
          <x>10</x>
          <y>10</y>
          <width>651</width>
-         <height>501</height>
+         <height>471</height>
         </rect>
        </property>
        <property name="widgetResizable">
@@ -517,7 +527,7 @@
           <x>0</x>
           <y>0</y>
           <width>649</width>
-          <height>499</height>
+          <height>469</height>
          </rect>
         </property>
         <widget class="QGroupBox" name="groupBox_7">
@@ -581,7 +591,7 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>520</y>
+         <y>490</y>
          <width>651</width>
          <height>25</height>
         </rect>

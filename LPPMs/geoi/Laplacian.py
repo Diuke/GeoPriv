@@ -1,7 +1,7 @@
 import math
 import copy
 import random
-from geoprivacy.utils.DataModel import DataModel
+from GeoPriv.utils.DataModel import DataModel
 import numpy as np
 
 class Laplacian:
@@ -25,7 +25,8 @@ class Laplacian:
         random.seed(seed)
         self.sensitivity = sensitivity
         self.points = []
-        self.model = copy.deepcopy(dataModel)
+        self.model = DataModel(dataModel)
+        #self.model = copy.deepcopy(dataModel)
         self.dataModel2Points()
         self.applyNoise() #Processing
         self.quadraticError = self.calculateError() #Quadratic error calculation
@@ -47,7 +48,7 @@ class Laplacian:
         error = 0
         for point in self.points:
             error += point['error']**2
-        error = error/len(self.points)
+        error = error/(len(self.points)+0.0000001)
         return error
     
     def applyNoise(self):

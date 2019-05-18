@@ -31,6 +31,8 @@ from .resources import *
 # Import the code for the dialog
 from .geoprivacy_dialog import GeoprivDialog
 import os.path
+import traceback
+import sys
 
 #custom classes
 from .utils.DataModel import DataModel
@@ -336,8 +338,10 @@ class Geopriv:
             newData = NRandK(k, n, gridPrecision, sRadius, lRadius, randomSeed, self.data)
             self.dlg.QError.setText(str(newData.quadraticError))
             self.dlg.pointLoss.setText(str(newData.pointLoss))
-        except:
+        except Exception as err:
             self.log("An error occurred during processing")
+            self.log(str(err))
+            self.log(str(traceback.format_exc()))
         else:
             self.log("NRandK processing was successful.")
             self.log("Creating new temporal layer.")
@@ -368,9 +372,11 @@ class Geopriv:
         try:
             newData = Laplacian(sensitivity, randomSeed, self.data)
             self.dlg.QError.setText(str(newData.quadraticError))
-            self.dlg.pointLoss.setText(str(newData.pointLoss))
-        except:
+            self.dlg.pointLoss.setText(str(newData.pointLoss)) 
+        except Exception as err:
             self.log("An error occurred during processing")
+            self.log(str(err))
+            self.log(str(traceback.format_exc()))
         else:
             self.log("Laplace Noise processing was successful.")
             self.log("Creating new temporal layer.")
@@ -430,8 +436,10 @@ class Geopriv:
             newData = Spatial(self.data, params)
             self.dlg.QError.setText(str(newData.quadraticError))
             self.dlg.pointLoss.setText(str(newData.pointLoss))
-        except:
+        except Exception as err:
             self.log("An error occurred during processing")
+            self.log(str(err))
+            self.log(str(traceback.format_exc()))
         else:
             self.log(params['algorithm'] + " processing was successful.")
             self.log("Creating new temporal layer.")
@@ -443,7 +451,8 @@ class Geopriv:
         
     def goToResultsTab(self):
         """Opens the results tab. Used to show results after processing"""
-        self.tabs.setCurrentIndex(4)
+        last = self.tabs.count()
+        self.tabs.setCurrentIndex(last-1)
 
     def run(self):
         """Run method that performs all the real work"""

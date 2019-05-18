@@ -10,11 +10,11 @@
 name=Geoprivacy
 qgisMinimumVersion=3.0
 description=A set of location privacy tools for geographic data.
-version=1.0
+version=1.0.2
 author=Juan Duque, Angelly Pugliese
 email=pjduque@uninorte.edu.co, angellyp@uninorte.edu.co
 
-about=Protect your data with a suite of Location Privacy Protection Mechanisms.
+about=Protect your datasets before publishing or putting them on maps with a suite of Location Privacy Protection Mechanisms. In GeoPriv you can choose between three location privacy methods that can be found in scientific articles and that we have implemented to be easily used by technical and non-technical users, providing location privacy for everyone!
 
 tracker=https://github.com/Diuke/GeoPriv/issues
 repository=https://github.com/Diuke/GeoPriv
@@ -25,11 +25,13 @@ repository=https://github.com/Diuke/GeoPriv
 # Uncomment the following line and add your changelog:
 changelog=
 	1.0 - First stable release
+	1.0.1 - Added header with homepage information
+	1.0.2 - Bug fixed where a layer couldn't deep copy because QVariant objects
 
 # Tags are comma separated with spaces allowed
 tags=python,location privacy,geoprivacy,privacy protection
 
-#homepage=https://github.com/Diuke/GeoPriv
+#homepage=https://diuke.github.io/
 category=Vectorial
 icon=geoprivacy/icon.png
 # experimental flag
