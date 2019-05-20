@@ -39,8 +39,6 @@ from .utils.DataModel import DataModel
 from .LPPMs.spatial.Spatial import Spatial
 from .LPPMs.nrandk.NRandK import NRandK
 from .LPPMs.geoi.Laplacian import Laplacian
-from nbformat.sign import algorithms
-
 
 class Geopriv:
     """QGIS Plugin Implementation."""
